@@ -1,5 +1,5 @@
 # turnt-sansa
-This is a work in progress.
+Work in progress.
 
 Currently the main goal of this to flesh out the basic's of my idea.
 This includes:
