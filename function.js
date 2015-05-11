@@ -1,17 +1,15 @@
 window.onload = function() {
-	canvasBackground()
 	//setup keyboard & mouse interface
-	//draw entities
+	keyboardAndMouseSetup()
+	//then loop through drawing all the different entities.
+	canvasBackground()
 };
 
 function canvasBackground(){
 	var canvas = document.getElementById("canvas");
 	var	ctx = canvas.getContext("2d");
 
-	var xPos, yPos = 0;
 	var squareSize = 32;
-	//If screen is in focus then receive input from keyboard. textarea? fillText? 
-	var screenFocus = false;
 
 	var dividedWidth = canvas.width/squareSize;
 	var dividedHeight = canvas.height/squareSize;
@@ -34,17 +32,16 @@ function canvasBackground(){
 	ctx.stroke();
 };
 
+function keyboardAndMouseSetup() {
+	$( "#canvas" ).click(function() {
+		alert( "Handler for .click() called." );
+	});
+	
+	$( "#canvas" ).keypress(function() {
+		console.log( "Handler for .keypress() called." );
+	});
+};
+
 function entity(){
-	this.xPos = 0;
-	this.yPos = 0;
-	this.numberArray = [];
-	this.currentFocus = false;
-
-	this.printNumbers = function() {
-		return "xPos: " + this.xPos + " yPos: " + this.yPos;
-	};
-
-	this.draw = function() {
-		return null
-	};
+	//
 };
