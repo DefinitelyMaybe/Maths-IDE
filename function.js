@@ -1,12 +1,14 @@
-window.onload = function() {
+window.onload = function(){
 	//setup keyboard & mouse interface
-	keyboardAndMouseSetup()
+	keyboardAndMouseSetup();
+
 	//then loop through drawing all the different entities.
-	canvasBackground()
+	canvasBackground();
+	console.log("onload complete.");
 };
 
 function canvasBackground(){
-	var canvas = document.getElementById("canvas");
+	var canvas = document.getElementById("math_canvas");
 	var	ctx = canvas.getContext("2d");
 
 	var squareSize = 32;
@@ -20,28 +22,35 @@ function canvasBackground(){
 
 	ctx.strokeStyle = "#38e1ff";
 	ctx.strokeWidth = 5;
-	ctx.beginPath();
+	ctx.beginPath()
 	for (var i = 0; i < dividedWidth; i++) {
-		ctx.moveTo(i*squareSize, 0)
-		ctx.lineTo(i*squareSize, canvas.height)
+		ctx.moveTo(i*squareSize, 0);
+		ctx.lineTo(i*squareSize, canvas.height);
 	};
 	for (var i = 0; i < dividedHeight; i++) {
-		ctx.moveTo(0, i*squareSize)
-		ctx.lineTo(canvas.width, i*squareSize)
+		ctx.moveTo(0, i*squareSize);
+		ctx.lineTo(canvas.width, i*squareSize);
 	};
 	ctx.stroke();
+	console.log("Background drawn.");
 };
 
 function keyboardAndMouseSetup() {
-	$( "#canvas" ).click(function() {
-		alert( "Handler for .click() called." );
+	$( "#math_canvas" ).click(function() {
+		console.log("mouse was clicked.");
 	});
 	
-	$( "#canvas" ).keypress(function() {
+	$( "#math_canvas" ).keypress(function() {
 		console.log( "Handler for .keypress() called." );
 	});
+	console.log("Keyboard and mouse setup complete.");
 };
 
-function entity(){
-	//
+var scene = {
+	squareSize : 32,
+	canvas : document.getElementById("math_canvas"),
+	//ctx : this.canvas.getContext("2d"),
+	print : function() {
+		console.log("print function called");
+	}
 };
