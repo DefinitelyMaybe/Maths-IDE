@@ -1,56 +1,56 @@
-window.onload = function(){
-	//setup keyboard & mouse interface
-	keyboardAndMouseSetup();
+/*
+Setup a scene,
+	a scene has objects,
+		objects are drawn in order,
+		objects can be added/deleted
 
-	//then loop through drawing all the different entities.
-	canvasBackground();
-	console.log("onload complete.");
-};
+Through mouse clicks on ui elements you can,
+	change some scene properties
+
+
+*/
+
+var square = {
+	size: 32,
+}
+
+onload = function () {
+	keyboardAndMouseSetup()
+	setInterval(function(){
+		canvasBackground()
+	}, 60)
+}
 
 function canvasBackground(){
-	var canvas = document.getElementById("math_canvas");
-	var	ctx = canvas.getContext("2d");
+	var ctx = document.getElementById("canvas").getContext("2d")
 
-	var squareSize = 32;
+	var dividedWidth = canvas.width/square.size
+	var dividedHeight = canvas.height/square.size
 
-	var dividedWidth = canvas.width/squareSize;
-	var dividedHeight = canvas.height/squareSize;
+	ctx.fillStyle = "white"
+	ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-	//setInterval is a loop. Currently it only draws the background and some text
-	ctx.fillStyle = "white";
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-	ctx.strokeStyle = "#38e1ff";
-	ctx.strokeWidth = 5;
+	ctx.strokeStyle = "#38e1ff"
+	ctx.strokeWidth = 5
 	ctx.beginPath()
 	for (var i = 0; i < dividedWidth; i++) {
-		ctx.moveTo(i*squareSize, 0);
-		ctx.lineTo(i*squareSize, canvas.height);
-	};
+		ctx.moveTo(i*square.size, 0)
+		ctx.lineTo(i*square.size, canvas.height)
+	}
 	for (var i = 0; i < dividedHeight; i++) {
-		ctx.moveTo(0, i*squareSize);
-		ctx.lineTo(canvas.width, i*squareSize);
-	};
-	ctx.stroke();
-	console.log("Background drawn.");
-};
+		ctx.moveTo(0, i*square.size)
+		ctx.lineTo(canvas.width, i*square.size)
+	}
+	ctx.stroke()
+}
 
 function keyboardAndMouseSetup() {
-	$( "#math_canvas" ).click(function() {
-		console.log("mouse was clicked.");
-	});
-	
-	$( "#math_canvas" ).keypress(function() {
-		console.log( "Handler for .keypress() called." );
-	});
-	console.log("Keyboard and mouse setup complete.");
-};
+	$( "#canvas" ).click(function(data) {
+		var mouseX = data.pageX
+		var mouseY = data.pageY
 
-var scene = {
-	squareSize : 32,
-	canvas : document.getElementById("math_canvas"),
-	//ctx : this.canvas.getContext("2d"),
-	print : function() {
-		console.log("print function called");
-	}
-};
+		console.log("mouse was clicked at " + mouseX + ", " + mouseY)
+		console.log(Math.floor(mouseX / square.size) + ", " + 
+					Math.floor(mouseY / square.size))
+	})
+}
