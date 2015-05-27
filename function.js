@@ -1,24 +1,12 @@
-/*
-Setup a scene,
-	a scene has objects,
-		objects are drawn in order,
-		objects can be added/deleted
-
-Through mouse clicks on ui elements you can,
-	change some scene properties
-
-
-*/
 
 var square = {
-	size: 32,
+	size: 32
 }
 
 onload = function () {
 	keyboardAndMouseSetup()
-	setInterval(function(){
-		canvasBackground()
-	}, 60)
+	//setInterval(function(){}, 60)
+	canvasBackground()
 }
 
 function canvasBackground(){
@@ -46,11 +34,16 @@ function canvasBackground(){
 
 function keyboardAndMouseSetup() {
 	$( "#canvas" ).click(function(data) {
-		var mouseX = data.pageX
-		var mouseY = data.pageY
-
-		console.log("mouse was clicked at " + mouseX + ", " + mouseY)
-		console.log(Math.floor(mouseX / square.size) + ", " + 
-					Math.floor(mouseY / square.size))
+		var sX = Math.floor(data.pageX / square.size)
+		var sY = Math.floor(data.pageY / square.size)
+		console.log("The (" + sX	+ ", " + sY + ") square was clicked.")
+		new thing(sX, sY)
 	})
+}
+
+var thing = function(sX, sY){
+	var ctx = document.getElementById("canvas").getContext("2d")
+	var c = square.size
+	ctx.fillStyle = "black"
+	ctx.fillRect(c*sX, c*sY, c, c)
 }

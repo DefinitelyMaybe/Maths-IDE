@@ -1,17 +1,13 @@
 # Math-IDE
 Work in progress. Ideas change.
 
-In essence, this is an attempt to create an interface for which someone can work on mathematics. It is especially important that aspects are easily manipulatable by the user.
+In essence, this is an attempt to create an interface for which someone can work on mathematics.
 
-There is the potential that the mathematics becomes too computational heavy for the browser. We'll see when we get there.
+There is the potential that the mathematics becomes too computational heavy for the browser.
 
 =========================================================================
 Part 1 - Basics?
--default settings
-	background, mathematical assumptions, notation
--user setings
-	colours, size, zoom 
--objects
-	equations, graphs, tables, vectors, matrices
+objects
+	1 + 1 = square
 
 =========================================================================
