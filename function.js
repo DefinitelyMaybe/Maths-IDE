@@ -1,4 +1,4 @@
-
+//need lookup table for collision's with any AABB in scene already.
 var scene = []
 
 var cell = {
@@ -8,12 +8,15 @@ var cell = {
 
 onload = function () {
 	keyboardAndMouseSetup()
+	canvasBackground()
 	setInterval(function(){
 		canvasBackground()
-		for (var i = 0; i < scene.length; i++) {
-			scene[i].draw()
-		};
-	}, 60)
+		if (scene.length > 0) {
+			for (var i = 0; i < scene.length; i++) {
+				scene[i].draw()
+			};
+		}
+	}, 30)
 }
 
 function canvasBackground(){
@@ -43,7 +46,7 @@ function keyboardAndMouseSetup() {
 	$( "#canvas" ).mouseup(function(data) {
 		var eX = Math.floor((data.pageX - cell.offset) / cell.size)
 		var eY = Math.floor((data.pageY - cell.offset) / cell.size)
-		console.log("blackBox " + ((scene.length) - 1) + " was updated.")
+		console.log("blackBox " + ((scene.length) - 1) + " was made.")
 		scene[scene.length-1].inFocus = false
 	})
 
@@ -62,25 +65,41 @@ function keyboardAndMouseSetup() {
 		var sX = Math.floor((data.pageX - cell.offset) / cell.size)
 		var sY = Math.floor((data.pageY - cell.offset) / cell.size)
 		console.log("The (" + sX	+ ", " + sY + ") cell was clicked.")
-		scene[scene.length] = new blackBox(sX, sY)
-		scene[scene.length-1].inFocus = true
+		if (false) {
+			return
+		} else {
+			scene[scene.length] = new blackBox(sX, sY)
+			scene[scene.length-1].inFocus = true
+		}
+		
 	})
 }
 
 var blackBox = function(sX, sY){
+	//AABB style attempt 1
 	var ctx = document.getElementById("canvas").getContext("2d")
 	var c = cell.size
 	this.sX = sX
 	this.sY = sY
-	var w = 1
-	var h = 1
+	this.w = 1
+	this.h = 1
 	this.inFocus = false
-	this.update = function(eX, eY){
-		w = (sX - eX) * -1
-		h = (sY - eY) * -1
+	this.update = function(eX, eY) {
+		if (this.sX <= eX) {
+			this.w = eX - this.sX
+			this.w += 1
+		} else {
+			this.w = (this.sX - eX) * -1
+		}
+		if (this.sY <= eY) {
+			this.h = eY - this.sY
+			this.h += 1
+		} else {
+			this.h = (this.sY - eY) * -1
+		}
 	}
 	this.draw = function(){
 		ctx.fillStyle = "black"
-		ctx.fillRect(c*sX, c*sY, c*w, c*h)
+		ctx.fillRect(c*this.sX, c*this.sY, c*this.w, c*this.h)
 	}
 }
