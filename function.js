@@ -66,16 +66,20 @@ var scene = {
 	offset: 10,
 	cellsize: 32,
 	objectsTable: {},
-	objectsArray: new objectArray()
+	objectsArray: new objectArray(),
+	context: null //This gets set in the onload function
 }
 
 var user = {
 	currentObj: null,
-	currentRef: null
+	currentRef: null,
+	mouse: {
+		flag: false
+	}
 }
 
 function draw_background(){
-	var ctx = document.getElementById("canvas_1").getContext("2d")
+	var ctx = scene.context
 
 	var dividedWidth = canvas_1.width/scene.cellsize
 	var dividedHeight = canvas_1.height/scene.cellsize
@@ -98,38 +102,51 @@ function draw_background(){
 }
 
 function keyboardMouseSetup() {
-	$( "#canvas_1" ).mousedown(function(data) {
-		var sX = Math.floor((data.pageX - scene.offset) / scene.cellsize)
-		var sY = Math.floor((data.pageY - scene.offset) / scene.cellsize)
+	var xPos, yPos
+	$("#canvas_1").mousedown(function(data) {
+		console.log("down")
+		user.mouse.flag = true
+		xPos = Math.floor((data.pageX - scene.offset) / scene.cellsize)
+		yPos = Math.floor((data.pageY - scene.offset) / scene.cellsize)
 
-		if (scene.objectsTable[[sX, sY]] == 1) {
+		if (scene.objectsTable[[xPos, yPos]] == 1) {
 			if (user.currentObj) {
 				user.currentObj.toggleFocus()
 			}
-
-			var obj = scene.objectsArray.linearSearch([sX, sY])
+			var obj = scene.objectsArray.linearSearch([xPos, yPos])
 			obj[0].toggleFocus()
 			user.currentObj = obj[0]
 			user.currentRef = obj[1]
-
-
 		} else {
-			//loose focus of current object
 			if (user.currentObj) {
 				user.currentObj.toggleFocus()
 			}
 
-			//create new object - default is in focus
-			var x = new blackBox(sX, sY)
+			var x = new blackBox(xPos, yPos)
 			user.currentObj = x
 			user.currentRef = scene.objectsArray.nextRef()
 			scene.objectsArray.addObject(x)
 
-			scene.objectsTable[[sX, sY]] = 1
+			scene.objectsTable[[xPos, yPos]] = 1
 		}
 	})
+
+	$("#canvas_1").mousemove(function(data) {
+		if (user.mouse.flag) {
+			if (user.currentObj) {
+				console.log("move")
+			} else {
+				return
+			}
+		}
+	})
+
+	$(document).mouseup(function(data) {
+		user.mouse.flag = false
+		console.log("up")
+	})
+
 	$(document).keydown(function(data) {
-		console.log("There was a key down")
 		scene.objectsArray.removeObject(user.currentRef)
 		user.currentRef = null
 		user.currentObj = null
@@ -137,7 +154,7 @@ function keyboardMouseSetup() {
 }
 
 var blackBox = function(sX, sY){
-	var ctx = document.getElementById("canvas_1").getContext("2d")
+	var ctx = scene.context
 	var c = scene.cellsize
 	var sX = sX 	//start X
 	var sY = sY 	//start Y
@@ -155,8 +172,8 @@ var blackBox = function(sX, sY){
 	}
 
 	this.update = function(uX, uY){
-		this.sX = uX
-		this.sY = uY
+		sX = uX
+		sY = uY
 	}
 
 	this.toggleFocus = function() {
@@ -176,9 +193,9 @@ var blackBox = function(sX, sY){
 					return true
 				}
 			}
+			return false
 		}
-		return false
-	};
+	}
 }
 
 function setupTableValues(){
@@ -192,12 +209,13 @@ function setupTableValues(){
 }
 
 onload = function () {
+	scene.context = document.getElementById("canvas_1").getContext("2d")
 	keyboardMouseSetup()
 	setupTableValues()
 
 	setInterval(function(){
 		draw_background()
-		//this is what draws the objects in the array
+
 		if (scene.objectsArray.len() > 0) {
 			for (var i = 0; i < scene.objectsArray.len(); i++) {
 				var x = scene.objectsArray.getObject(i)
