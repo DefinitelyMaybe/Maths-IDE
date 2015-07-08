@@ -1,0 +1,14 @@
+-------------------------------------------------------------------------------------
+first things first:
+-Drawing new squares
+
+-------------------------------------------------------------------------------------
+ideas:
+creating, saving and loading new scenes
+Would it also be possible to send calculations to the users computer to process more?
+
+-------------------------------------------------------------------------------------
+done:
+-collisions with squares
+
+-------------------------------------------------------------------------------------

@@ -1,25 +1,27 @@
-var objectArray = function(){
-	var objects = []
-	var freeIndices = []
+function MyArray(){
+	this.objects = []
+	this.freeIndices = []
 
 	this.addObject = function(item){
-		if (freeIndices.length > 0) {
-			var index = freeIndices.pop()
-			objects[index] = item
+		if (this.freeIndices.length > 0) {
+			index = this.freeIndices.pop()
+			this.objects[index] = item
 		} else {
-			objects.push(item)
+			this.objects.push(item)
 		}
 	}
 
 	this.removeObject = function(index){
 		if (typeof index !== "number") {
-			return "RemoveObject - index was not a number."
+			console.log("RemoveObject - index was not a number.")
+			return
 		} else {
 			try {
-				objects[index] = null
-				freeIndices.push(index)
+				this.objects[index] = null
+				this.freeIndices.push(index)
 			} catch(err) {
-				return "objectArray - removeObject error."
+				console.log("MyArray - removeObject error.")
+				return
 			}
 		}
 		
@@ -27,32 +29,34 @@ var objectArray = function(){
 
 	this.getObject = function(index) {
 		if (typeof index !== "number") {
-			return "GetObject - index was not a number."
+			console.log("GetObject - index was not a number.")
+			return
 		} else {
 			try {
-				var temp = objects[index]
-				return temp
+				x = this.objects[index]
+				return x
 			} catch(err) {
-				return "objectArray - getObject error"
+				console.log("MyArray - getObject error")
+				return 
 			} 
 		}
 	}
 
-	this.len = function(){
-		return objects.length
+	this.length = function(){
+		return this.objects.length
 	}
 
 	this.nextRef = function() {
-		if (freeIndices.length > 0) {
-			return freeIndices[freeIndices.length-1]
+		if (this.freeIndices.length > 0) {
+			return this.freeIndices[this.freeIndices.length-1]
 		} else {
-			return objects.length
+			return this.objects.length
 		}
 	}
 
 	this.linearSearch = function(args) {
-		for (var i = 0; i < this.len(); i++) {
-			var obj = objects[i]
+		for (var i = 0; i < this.length(); i++) {
+			var obj = this.objects[i]
 			if (obj) {
 				if (obj.equal(args)) {
 					return [obj, i]
@@ -66,7 +70,7 @@ var scene = {
 	offset: 10,
 	cellsize: 32,
 	objectsTable: {},
-	objectsArray: new objectArray(),
+	objectsArray: new MyArray(),
 	context: null //This gets set in the onload function
 }
 
@@ -104,7 +108,6 @@ function draw_background(){
 function keyboardMouseSetup() {
 	var xPos, yPos
 	$("#canvas_1").mousedown(function(data) {
-		console.log("down")
 		user.mouse.flag = true
 		xPos = Math.floor((data.pageX - scene.offset) / scene.cellsize)
 		yPos = Math.floor((data.pageY - scene.offset) / scene.cellsize)
@@ -134,7 +137,7 @@ function keyboardMouseSetup() {
 	$("#canvas_1").mousemove(function(data) {
 		if (user.mouse.flag) {
 			if (user.currentObj) {
-				console.log("move")
+				//
 			} else {
 				return
 			}
@@ -143,13 +146,14 @@ function keyboardMouseSetup() {
 
 	$(document).mouseup(function(data) {
 		user.mouse.flag = false
-		console.log("up")
 	})
 
 	$(document).keydown(function(data) {
-		scene.objectsArray.removeObject(user.currentRef)
-		user.currentRef = null
-		user.currentObj = null
+		if (user.currentObj) {
+			scene.objectsArray.removeObject(user.currentRef)
+			user.currentRef = null
+			user.currentObj = null
+		}
 	})
 }
 
@@ -204,8 +208,8 @@ function setupTableValues(){
 	for (var i = 0; i < x; i++) {
 		for (var j = 0; j < y; j++) {
 			scene.objectsTable[[i, j]] = 0
-		};
-	};
+		}
+	}
 }
 
 onload = function () {
@@ -213,11 +217,18 @@ onload = function () {
 	keyboardMouseSetup()
 	setupTableValues()
 
+	x = new BlueBox(8, 10, 3, 2)
+	y = new BlueBox(10, 9, 3, 4)
+	console.log(x.toString())
+	console.log(y.toString())
+	console.log(x.col(y))
+	console.log(y.col(x))
+
 	setInterval(function(){
 		draw_background()
 
-		if (scene.objectsArray.len() > 0) {
-			for (var i = 0; i < scene.objectsArray.len(); i++) {
+		if (scene.objectsArray.length() > 0) {
+			for (var i = 0; i < scene.objectsArray.length(); i++) {
 				var x = scene.objectsArray.getObject(i)
 				if (x) {
 					x.draw()
