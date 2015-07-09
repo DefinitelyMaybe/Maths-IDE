@@ -1,6 +1,7 @@
 -------------------------------------------------------------------------------------
 first things first:
--Drawing new squares
+-collision bug 1 (object boundaries)
+-moving objects
 
 -------------------------------------------------------------------------------------
 ideas:
@@ -10,5 +11,6 @@ Would it also be possible to send calculations to the users computer to process 
 -------------------------------------------------------------------------------------
 done:
 -collisions with squares
+-Drawing new squares
 
 -------------------------------------------------------------------------------------
