@@ -1,7 +1,10 @@
 -------------------------------------------------------------------------------------
 first things first:
--collision bug 1 (object boundaries)
 -moving objects
+
+-------------------------------------------------------------------------------------
+one side:
+-object selection / toggling focus
 
 -------------------------------------------------------------------------------------
 ideas:
@@ -12,5 +15,7 @@ Would it also be possible to send calculations to the users computer to process 
 done:
 -collisions with squares
 -Drawing new squares
+-collision bug 1 (object references)
+-deleting objects so that space can be used again.
 
 -------------------------------------------------------------------------------------
