@@ -3,8 +3,7 @@ first things first:
 -moving objects
 
 -------------------------------------------------------------------------------------
-one side:
--object selection / toggling focus
+on the side:
 
 -------------------------------------------------------------------------------------
 ideas:
@@ -13,9 +12,10 @@ Would it also be possible to send calculations to the users computer to process 
 
 -------------------------------------------------------------------------------------
 done:
--collisions with squares
--Drawing new squares
--collision bug 1 (object references)
+-object selection / toggling focus
 -deleting objects so that space can be used again.
+-collision bug 1 (object references)
+-Drawing new squares
+-collisions with squares
 
 -------------------------------------------------------------------------------------
