@@ -14,8 +14,10 @@ function Scene() {
 
 function User() {
  	this.curObj = null //current object
+ 	this.curObjRef = null
 	this.mouse = { //mouse
-		f: false // for mouse down and hold.
+		f: false, // for mouse down and hold.
+		sameObj: null
 	}
 }
 
@@ -256,19 +258,19 @@ function GreyBox(x, y, w, h) {
 	this.width = w
 	this.height = h
 
-	this.focus = true //This is for checking it the user has it selected.
+	this.bool = true //This is for checking it the user has it selected.
 	this.index = null //Stores it's index value when inside scene.objectsArray
 
-	this.toggleFocus = function() {
-		if (this.focus) {
-			this.focus = false
+	this.focus = function(arg) {
+		if (typeof arg == "boolean") {
+			this.bool = arg
 		} else {
-			this.focus = true
+			return this.bool
 		}
 	}
 
 	this.draw = function(ctx) {
-		if (this.focus) {
+		if (this.bool) {
 			ctx.fillStyle = "grey"
 		} else {
 			ctx.fillStyle = "black"
@@ -526,29 +528,39 @@ function keyboardMouseSetup(arg) {
 
 		check = collision.checkPoint(new Point(data.pageX - off, data.pageY - off))
 		if (check[0]) {
-			//if there is no object at that point. create an object for that square
+			//if there is no object at that point. create an Grey box.
 			obj = new GreyBox(sqrX, sqrY, cell, cell)
 			obj.index = scene.objectsArray.nextRef()
 			if (user.curObj) {
-				user.curObj.toggleFocus()
+				user.curObj.focus(false)
 			}
 			user.curObj = obj
+			user.curObjRef = obj.index
 			scene.objectsArray.addObject(obj)
 			collision.addObjectReference([obj.index, check[1]]) //index and CollBox index
-		} else if (!check[0]) {
-			//get the object at that point
+			//Making sure the user object knows there wasn't a collision object to reference
+			user.mouse.sameObj = false
+		} else {
+			//There was something there so grab a reference to use later.
 			obj = scene.objectsArray.getObject(check[1])
-			//should I toggle focus? revisit this later
 			if (user.curObj) {
-				if (user.curObj.equal(obj)) {
-					user.curObj.toggleFocus()
+				//they are currently looking at an object
+				if (!user.curObj.equal(obj)) {
+					//and it was NOT the same object they collided with 
+					user.curObj.focus(false)
+					//get the existing other one and set in focus
+					obj.focus(true)
+					user.curObj = obj
+					user.curObjRef = obj.index
+				} else {
+					user.mouse.sameObj = true
 				}
-				user.curObj.toggleFocus()
-				user.curObj = obj
-				user.curObj.toggleFocus()
 			} else {
+				//user didn't have anything previously selected so just setup the object the
+				//mouse click collided with
+				obj.focus(true)
 				user.curObj = obj
-				user.curObj.toggleFocus()
+				user.curObjRef = obj.index
 			}
 		}
 	})
@@ -558,10 +570,10 @@ function keyboardMouseSetup(arg) {
 			if (user.curObj) {
 				//this will just be moving the currently selected object.
 				//fine movement until mouseup at which point, snap to box
-				check = collision.checkPolygon(user.curObj)
-				if (check[0]) {
-					console.log("HERE!")
-				}
+				//check = collision.checkPolygon(user.curObj)
+				//if (check[0]) {
+				//	console.log("HERE!")
+				//}
 			} else {
 				return
 			}
@@ -569,14 +581,32 @@ function keyboardMouseSetup(arg) {
 	})
 
 	$(document).mouseup(function(data) {
+		//user is finishing the click.
+		if (user.curObj) {
+			//they are currently looking at an object
+			if (user.mouse.sameObj) {
+				//and it was the same object they collided with 
+				if (user.curObj.focus()) {
+					user.curObj.focus(false)
+					user.curObj = null
+					user.curObjRef = null
+				} else {
+					user.curObj.focus(true)
+				}
+				//Making sure this loop isn't entered without the correct click conditions.
+				user.mouse.sameObj = false
+			}
+		}
 		user.mouse.f = false
 	})
 
 	$(document).keydown(function(data) {
 		if (user.curObj) {
-			scene.objectsArray.removeObject(user.curObj.index)
-			collision.removeIndice(user.curObj.index)
-			user.curObj = null
+			if (user.curObj.focus()) {
+				scene.objectsArray.removeObject(user.curObj.index)
+				collision.removeIndice(user.curObj.index)
+				user.curObj = null
+			}
 		}
 	})
 }
