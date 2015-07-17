@@ -12,6 +12,7 @@ function Scene() {
 	this.collisionGranularity = 2
 }
 
+//------------------------------------------------------------------------------------------------
 function User() {
  	this.curObj = null //current object
  	this.curObjRef = null
@@ -21,535 +22,452 @@ function User() {
 	}
 }
 
-function Point(x, y) {
-	this.xPos = x
-	this.yPos = y
+//------------------------------------------------------------------------------------------------
+function MyArray(){
+	//These are used as two stacks
+	this.objects = []
+	this.freeIndices = []
+}
 
-	this.x = function(arg) {
-		if (typeof arg === "number") {
-			this.xPos = arg
-		} else {
-			return this.xPos
-		} 
-	}
+MyArray.prototype.length = function() {
+	return this.objects.length
+}
 
-	this.y = function(arg) {
-		if (typeof arg === "number") {
-			this.yPos = arg
-		} else {
-			return this.yPos
-		} 
+MyArray.prototype.removeObject = function(arg) {
+	if (typeof arg == "number") {
+		this.objects[arg] = null
+		this.freeIndices.push(arg)
+	} else {
+		console.log("MyArray could not removeObject at", arg)
 	}
 }
 
+MyArray.prototype.addObject = function(arg) {
+	if (this.freeIndices.length > 0) {
+		index = this.freeIndices.pop()
+		this.objects[index] = arg
+	} else {
+		this.objects.push(arg)
+	}
+}
+
+MyArray.prototype.getObject = function(arg) {
+	if (typeof arg == "number") {
+		return this.objects[arg]
+	} else {
+		console.log("MyArray could not getObject at", arg)
+		return
+	}
+}
+
+MyArray.prototype.nextRef = function() {
+	if (this.freeIndices.length > 0) {
+		return this.freeIndices[this.freeIndices.length-1]
+	} else {
+		return this.objects.length
+	}
+}
+
+MyArray.prototype.linearSearch = function(arg) {
+	//Linear search that stops on the first object that is equal to arg
+	for (var i = 0; i < this.length(); i++) {
+		var obj = this.objects[i]
+		if (obj) {
+			if (obj.equal(arg)) {
+				return [obj, i]
+			}
+		}
+	};
+}
+
+//------------------------------------------------------------------------------------------------
+function Point(x, y) {
+	this.x = x
+	this.y = y
+}
+
+Point.prototype.equal = function(arg) {
+	if (this.x == arg.x) {
+		if (this.y == arg.y) {
+			return true
+		}		
+	}
+	return false
+}
+
+Point.prototype.toString = function() {
+	return "", this.x, ", ", this.y
+}
+
+//------------------------------------------------------------------------------------------------
 function Polygon(x, y, w, h) {
+	this.x = x
+	this.y = y
+	this.w = w
+	this.h = h
+}
 
-	this.xPos = x
-	this.yPos = y
-	this.width = w
-	this.height = h
-
-	this.x = function(arg) {
-		if (typeof arg === "number") {
-			this.xPos = arg
-		} else {
-			return this.xPos
-		} 
+Polygon.prototype.equal = function(arg) {
+	if (this.x == arg.x) {
+		if (this.y == arg.y) {
+			if (this.w == arg.w) {
+				if (this.h == arg.h) {
+					return true
+				}
+			}
+		}		
 	}
+	return false
+}
 
-	this.y = function(arg) {
-		if (typeof arg === "number") {
-			this.yPos = arg
-		} else {
-			return this.yPos
-		} 
+Polygon.prototype.toString = function() {
+	return "", this.x, ", ", this.y, "; ", this.w, ", ", this.h
+}
+
+Polygon.prototype.checkPolygon = function(arg) {
+	if (arg instanceof Polygon) {
+		x = this.findClosestPoints(arg)
+		a = new Point(x[0], x[1])
+		b = new Point(x[2], x[3])
+		return (this.checkPoint(a) || arg.checkPoint(b))
+	} else {
+		console.log("Polygon.checkPolygon requires a Polygon but got", arg)
+		return
 	}
+}
 
-	this.w = function(arg) {
-		if (typeof arg === "number") {
-			this.width = arg
-		} else {
-			return this.width
-		} 
-	}
-
-	this.h = function(arg) {
-		if (typeof arg === "number") {
-			this.height = arg
-		} else {
-			return this.height
-		} 
-	}
-
-	this.equal = function (arg) {
-		if (this.x() == arg.x()) {
-			if (this.y() == arg.y()) {
-				if (this.w() == arg.w()) {
-					if (this.h() == arg.h()) {
+Polygon.prototype.checkPoint = function(arg) {
+	if (arg instanceof Point ) {
+		numX = arg.x
+		numY = arg.y
+		if (this.h >= 0) {
+			//height is postive
+			if (this.w >= 0) {
+				//width is postive
+				if ((this.x <= numX) && (this.x + this.w >= numX)) {
+					if ((this.y <= numY) && (this.y + this.h >= numY)) {
 						return true
 					}
 				}
-			}		
-		}
-		return false
-	}
-
-	this.toString = function() {
-		return "Polygon: ", this.xPos + ", " + this.yPos + "; " + this.width + ", " + this.height
-	}
-}
-
-function CollPolygon(x, y, w, h) {
-	Polygon.call(this)
-
-	this.xPos = x
-	this.yPos = y
-	this.width = w
-	this.height = h
-
-	this.collides = function(arg) {
-		if (arg instanceof CollPolygon) {
-			x = this.findClosestPoints(arg)
-			a = new Point(x[0], x[1])
-			b = new Point(x[2], x[3])
-			return (this.pointIn(a) || arg.pointIn(b))
-		} else {
-			try {
-				throw "CollPolygon: collides requires an instance of CollPolygon"
-			} catch (e) {
-				return
-			}
-			
-			
-		}
-	}
-
-	this.pointIn = function (arg) {
-		if (arg instanceof Point || CollPolygon) {
-			numX = arg.x()
-			numY = arg.y()
-			if (this.height >= 0) {
-				//height is postive
-				if (this.width >= 0) {
-					//width is postive
-					if ((this.xPos <= numX) && (this.xPos + this.width >= numX)) {
-						if ((this.yPos <= numY) && (this.yPos + this.height >= numY)) {
-
-							return true
-						}
+			else
+				//width is negative
+				if ((this.x >= numX) && (this.x + this.w <= numX)) {
+					if ((this.y <= numY) && (this.y + this.h >= numY)) {
+						return true
 					}
-				else
-					//width is negative
-					if ((this.xPos >= numX) && (this.xPos + this.width <= numX)) {
-						if ((this.yPos <= numY) && (this.yPos + this.height >= numY)) {
-							return true
-						}
+				}
+			}
+		} else {
+			//height is negative
+			if (this.w >= 0) {
+				//width is postive
+				if ((this.x <= numX) && (this.x + this.w >= numX)) {
+					if ((this.y >= numY) && (this.y + this.h <= numY)) {
+						return true
 					}
 				}
 			} else {
-				//height is negative
-				if (this.width >= 0) {
-					//width is postive
-					if ((this.xPos <= numX) && (this.xPos + this.width >= numX)) {
-						if ((this.yPos >= numY) && (this.yPos + this.height <= numY)) {
-							return true
-						}
-					}
-				} else {
-					//width is negative
-					if ((this.xPos >= numX) && (this.xPos + this.width <= numX)) {
-						if ((this.yPos >= numY) && (this.yPos + this.height <= numY)) {
-							return true
-						}
+				//width is negative
+				if ((this.x >= numX) && (this.x + this.w <= numX)) {
+					if ((this.y >= numY) && (this.y + this.h <= numY)) {
+						return true
 					}
 				}
 			}
-			return false
-		} else {
-			console.log("collision: pointIn requires an instance of Point")
-			return
 		}
+		return false
+	} else {
+		console.log("collision.checkPoint() needed a point but got", arg)
+		return
 	}
+}
 
-	this.findClosestPoints = function(arg) {
-		shortestDistance = Infinity
-		points = []
-		if (arg instanceof Point) {
-			x2 = arg.x()
-			y2 = arg.y()
-			for (var i = 0; i < 4; i++) {
-				if (i == 0) {
-				   	x1 = this.x()
-				   	y1 = this.y()
-				} else if (i == 1) {
-					x1 = this.x() + this.w()
-					y1 = this.y()
-				} else if (i == 2) {
-					x1 = this.x()
-					y1 = this.y() + this.h()
-				} else if (i == 3) {
-					x1 = this.x() + this.w()
-					y1 = this.y() + this.h()
+Polygon.prototype.findClosestPoints = function(arg) {
+	var shortestDistance = Infinity
+	var closestPoints = []
+	if (arg instanceof Point) {
+		x2 = arg.x
+		y2 = arg.y
+		for (var i = 0; i < 4; i++) {
+			if (i == 0) {
+			   	x1 = this.x
+			   	y1 = this.y
+			} else if (i == 1) {
+				x1 = this.x + this.w
+				y1 = this.y
+			} else if (i == 2) {
+				x1 = this.x
+				y1 = this.y + this.h
+			} else if (i == 3) {
+				x1 = this.x + this.w
+				y1 = this.y + this.h
+			}
+			a = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+			if (a < shortestDistance) {
+				shortestDistance = a
+				closestPoints = [x2, y2, x1, y1]
+			}
+		}
+		return closestPoints
+	} else if (arg instanceof Polygon) {
+		for (var i = 0; i < 4; i++) {
+			if (i == 0) {
+			   	x1 = this.x
+			   	y1 = this.y
+			} else if (i == 1) {
+				x1 = this.x + this.w
+				y1 = this.y
+			} else if (i == 2) {
+				x1 = this.x
+				y1 = this.y + this.h
+			} else if (i == 3) {
+				x1 = this.x + this.w
+				y1 = this.y + this.h
+			}
+			for (var j = 0; j < 4; j++) {
+				if (j == 0) {
+					x2 = arg.x
+					y2 = arg.y
+				}else if (j == 1) {
+					x2 = arg.x + arg.w
+					y2 = arg.y
+				} else if (j == 2) {
+					x2 = arg.x
+					y2 = arg.y + arg.h
+				} else if (j == 3) {
+					x2 = arg.x + arg.w
+					y2 = arg.y + arg.h
 				}
 				a = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
 				if (a < shortestDistance) {
 					shortestDistance = a
-					points = [x2, y2, x1, y1]
+					closestPoints = [x2, y2, x1, y1]
 				}
-			}
-			return points
-		} else if (arg instanceof CollPolygon) {
-			for (var i = 0; i < 4; i++) {
-				if (i == 0) {
-				   	x1 = this.x()
-				   	y1 = this.y()
-				} else if (i == 1) {
-					x1 = this.x() + this.w()
-					y1 = this.y()
-				} else if (i == 2) {
-					x1 = this.x()
-					y1 = this.y() + this.h()
-				} else if (i == 3) {
-					x1 = this.x() + this.w()
-					y1 = this.y() + this.h()
-				}
-				for (var j = 0; j < 4; j++) {
-					if (j == 0) {
-						x2 = arg.x()
-						y2 = arg.y()
-					}else if (j == 1) {
-						x2 = arg.x() + arg.w()
-						y2 = arg.y()
-					} else if (j == 2) {
-						x2 = arg.x()
-						y2 = arg.y() + arg.h()
-					} else if (j == 3) {
-						x2 = arg.x() + arg.w()
-						y2 = arg.y() + arg.h()
-					}
-					a = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
-					if (a < shortestDistance) {
-						shortestDistance = a
-						points = [x2, y2, x1, y1]
-					}
-				}
-			}
-			return points
-		} else {
-			try {
-				throw "CollPolygon: arg was not an instance of Point or CollPolygon"
-	
-			} catch (e) {
-				return
 			}
 		}
+		return closestPoints
+	} else {
+		console.log("Polygon.findClosestPoints needs a Point or Polygon but got", arg)
+		return
 	}
 }
 
-CollPolygon.prototype = Object.create(Polygon.prototype)
-
+//------------------------------------------------------------------------------------------------
 function GreyBox(x, y, w, h) {
-	CollPolygon.call(this)
-	//I re-added these variables because I couldn't figure out how to pass the GreyBox function
-	//inputs in as Polygon function inputs
+	Polygon.call(this, x, y, w, h)
 
-	this.xPos = x
-	this.yPos = y
-	this.width = w
-	this.height = h
-
-	this.bool = true //This is for checking it the user has it selected.
-	this.index = null //Stores it's index value when inside scene.objectsArray
-
-	this.focus = function(arg) {
-		if (typeof arg == "boolean") {
-			this.bool = arg
-		} else {
-			return this.bool
-		}
-	}
-
-	this.draw = function(ctx) {
-		if (this.bool) {
-			ctx.fillStyle = "grey"
-		} else {
-			ctx.fillStyle = "black"
-		}
-		ctx.fillRect(this.xPos, this.yPos, this.width, this.height)
-	}
+	this.focus = true //This is for checking it the user has it selected.
+	this.index = null //Stores it's index value inside of scene.objectsArray
 }
 
-GreyBox.prototype = Object.create(CollPolygon.prototype)
+GreyBox.prototype = Object.create(Polygon.prototype)
 
+GreyBox.prototype.draw = function(arg) {
+	if (this.focus) {
+		arg.fillStyle = "grey"
+	} else {
+		arg.fillStyle = "black"
+	}
+	arg.fillRect(this.x, this.y, this.w, this.h)
+}
+
+//------------------------------------------------------------------------------------------------
 function CollBox(x, y, w, h) {
-	CollPolygon.call(this)
-
-	this.xPos = x
-	this.yPos = y
-	this.width = w
-	this.height = h
+	Polygon.call(this, x, y, w, h)
 
 	this.objRefs = []
+}
 
-	this.addReference = function(arg) {
-		if (typeof arg != "number") {
-			console.log("CollBox addReference did not add", arg)
-			return
-		} else {
-			this.objRefs[this.objRefs.length] = arg
-		}
-	}
+CollBox.prototype = Object.create(Polygon.prototype)
 
-	this.getReferences = function() {
-		return this.objRefs
-	}
-
-	this.removeIndex = function(arg) {
-		if (typeof arg == "number") {
-			x = []
-			for (var i = 0; i < this.objRefs.length; i++) {
-				if (this.objRefs[i] != arg) {
-					x = x.concat([this.objRefs[i]])
-				}
+CollBox.prototype.removeIndex = function(arg) {
+	if (typeof arg == "number") {
+		x = []
+		for (var i = 0; i < this.objRefs.length; i++) {
+			if (this.objRefs[i] != arg) {
+				x[x.length] = this.objRefs[i]
 			}
-			this.objRefs = x
-		} else {
-			console.log("CollBox.removeIndex did not remove", arg)
 		}
-		
-	}
-	this.draw = function(ctx) {
-		ctx.fillStyle = "#38e1ff"
-		ctx.fillRect(this.xPos, this.yPos, this.width, this.height)
+		this.objRefs = x
+	} else {
+		console.log("CollBox.removeIndex did not remove", arg)
 	}
 }
 
-CollBox.prototype = Object.create(CollPolygon.prototype)
-
-function MyArray(){
-	this.objects = []
-	this.freeIndices = []
-
-	this.addObject = function(item){
-		if (this.freeIndices.length > 0) {
-			index = this.freeIndices.pop()
-			this.objects[index] = item
-		} else {
-			this.objects.push(item)
-		}
-	}
-
-	this.removeObject = function(index){
-		if (typeof index !== "number") {
-			console.log("MyArray could not removeObject at", index)
-			return
-		} else {
-			this.objects[index] = null
-			this.freeIndices.push(index)
-		}
-		
-	}
-
-	this.getObject = function(index) {
-		if (typeof index !== "number") {
-			console.log("MyArray could not getObject at", index)
-			return
-		} else {
-			x = this.objects[index]
-			return x
-		}
-	}
-
-	this.length = function(){
-		return this.objects.length
-	}
-
-	this.nextRef = function() {
-		if (this.freeIndices.length > 0) {
-			return this.freeIndices[this.freeIndices.length-1]
-		} else {
-			return this.objects.length
-		}
-	}
-
-	this.linearSearch = function(args) {
-		for (var i = 0; i < this.length(); i++) {
-			var obj = this.objects[i]
-			if (obj) {
-				if (obj.equal(args)) {
-					return [obj, i]
-				}
-			}
-		};
-	}
+CollBox.prototype.draw = function(arg) {
+	arg.fillStyle = "#38e1ff"
+	arg.fillRect(this.x, this.y, this.w, this.h)
 }
 
+//------------------------------------------------------------------------------------------------
 function Collision(arg) {
-	this.box = []
+	//This breaks down the screen into smaller squares that store references to the objects within
+	//them.
+	this.collBoxes = []
+	var num = arg.collisionGranularity
+	var divW = arg.width / num
+	var divH = arg.height / num
 
-	num = arg.collisionGranularity
-	divW = arg.width / num
-	divH = arg.height / num
-
+	//setup a number of collboxes
 	for (var i = 0; i < num; i++) {
 		for (var j = 0; j < num; j++) {
 			x = Math.ceil(j*divW)
 			y = Math.ceil(i*divH)
-			this.box[this.box.length] = new CollBox(x, y, divW, divH)
+			this.collBoxes[this.collBoxes.length] = new CollBox(x, y, divW, divH)
 		}
-	}
-
-	this.removeIndice = function(arg) {
-		for (var i = 0; i < this.box.length; i++) {
-			this.box[i].removeIndex(arg)
-		}
-	}
-
-	this.getIndices = function(arg) {
-		if (arg instanceof Point) {
-			x = []
-			y = []
-			for (var i = 0; i < this.box.length; i++) {
-				if (this.box[i].pointIn(arg)) {
-					//console.log("b:",x)
-					x = x.concat(this.box[i].objRefs)
-					y = y.concat([i])
-					//console.log("a:",x)
-				}
-			}
-			return [x, y]
-		} else if (arg instanceof CollPolygon) {
-			x = []
-			y = null
-			for (var i = 0; i < this.box.length; i++) {
-				if (this.box[i].collides(arg)) {
-					x = x.concat(this.box[i].getReferences)
-					if (y == null) {
-						y = i
-					} else {
-						console.log("Collision.getIndices will need to be done differently")
-					}
-					
-				}
-			}
-			return [x, y]
-		} else {
-			console.log("Collision.getIndices requires a Point or CollPolygon")
-			return
-		}
-	}
-
-	this.checkPoint = function(arg) {
-		if (arg instanceof Point) {
-			x = this.getIndices(arg)
-			objectIndex = x[0]
-			//console.log("index: ", objectIndex)
-			nums = x[1]
-			//console.log("box: ", nums)
-			if (scene.objectsArray.length() > 0) {
-				for (var i = 0; i < objectIndex.length; i++) {
-					if (scene.objectsArray.getObject(objectIndex[i]).pointIn(arg)) {
-						return [false, objectIndex[i]]
-					}
-				}
-			}
-			return [true, nums]
-		} else {
-			console.log("Collision: checkPoint requires arg to be an instance of Point")
-			return
-		}
-	}
-	this.checkPolygon = function(arg) {
-		x = this.getIndices(arg)
-		objectIndices = x[0]
-		//console.log("indices: ", objectIndices)
-		nums = x[1]
-		//console.log("box: ", nums)
-		if (scene.objectsArray.length() > 0) {
-			for (var i = 0; i < objectIndices.length; i++) {
-				if (scene.objectsArray.getObject(objectIndices[i]).collides(arg)) {
-					return false
-				}
-			}
-		}
-		//About to return true so add this index to objRefs
-		this.box[nums[0]].addReference(arg.index)
-		return true
-	}
-
-	this.addObjectReference = function(args) {
-		this.box[args[1]].addReference(args[0])
 	}
 }
 
+Collision.prototype.addObjectReference = function(collArray, objIndex) {
+	if ((Array.isArray(collArray)) && (typeof objIndex == "number")) {
+		for (var i = 0; i < collArray.length; i++) {
+			x = this.collBoxes[collArray[i]]
+			x.objRefs[x.objRefs.length] = objIndex
+		}
+	} else {
+		console.log("Collision.addObjectReference requires two numbers; collArray, objIndex.")
+		console.log("Instead it got:", collArray, "and", objIndex)
+	}
+}
+
+Collision.prototype.removeIndice = function(arg) {
+	if (typeof arg == "number") {
+		for (var i = 0; i < this.collBoxes.length; i++) {
+			this.collBoxes[i].removeIndex(arg)
+		}
+	} else {
+		console.log("Collision.removeIndice requires a number but got", arg)
+	}
+}
+
+Collision.prototype.checkObject = function(arg) {
+	var bool = false
+	var collObjRef = null
+	var collBoxNums = []
+	var collBoxRefs = []
+	if (arg instanceof Point) {
+		//console.log("checkObj -> point")
+		//if bool gets set to a true value then the return will need to been given the
+		//index of the object it collided with.
+		for (var i = 0; i < this.collBoxes.length; i++) {
+			if (this.collBoxes[i].checkPoint(arg)) {
+				//console.log("collision evaluated:", arg, " to be inside of", this.collBoxes[i])
+				collBoxRefs = collBoxRefs.concat(this.collBoxes[i].objRefs)
+				if (collBoxNums.length == 1) {
+					console.log(arg, "collided with two or more collboxes")
+					console.log("collbox[", i, "] and collbox[", collBoxNums[0], "]")
+				}
+				collBoxNums = [i] //setting to a list so that when it gets returned can not
+				//worry about the number of collpolygons an instance of collpolygon 
+				//would've returned
+			} else {
+				//console.log("collision evaluated:",arg," to NOT be inside of", this.collBoxes[i])
+			}
+		}
+		for (var i = 0; i < collBoxRefs.length; i++) {
+			var x = scene.objectsArray.getObject(collBoxRefs[i])
+			//if (bool) {
+			//	console.log(arg, "collided with two or more objects;", x)
+			//}
+			if (x.checkPoint(arg)) {
+				bool = true
+				collObjRef = x.index
+			}
+		}
+		if (bool) {
+			return [bool, collObjRef] //return the reference of the obj that we collided with
+		} else {
+			//console.log("this.collboxes -> false")
+			return [bool, collBoxNums] //return the box to add reference to
+		}
+		
+	} else if (arg instanceof Polygon) {
+		
+		//for (var i = 0; i < this.collBoxes.length; i++) {
+		//	if (this.collBoxes[i].checkPolygon(arg)) {
+		//		x = x.concat(this.collBoxes[i].getReferences)
+		//		if (y == null) {
+		//			y = i
+		//		} else {
+		//			console.log("Collision.getIndices - CollPolygon didn't expect this")
+		//			console.log("and might not have given an appropriate result")
+		//		}
+		//		
+		//	}
+		//}
+		console.log("collision for polygon is not done yet")
+	} else {
+		console.log("Collision.checkObj requires a point or polygon but got", arg)
+	}
+}
+
+//------------------------------------------------------------------------------------------------
 function Draw(arg) {
 	//wants to write a couple of properties from the scene object
-	var ctx = arg.context
-	var cell = arg.cellsize
-	var divWidth = Math.ceil(canvas_1.width/cell)
-	var divHeight = Math.ceil(canvas_1.height/cell)
-
-	this.background = function() {
-		ctx.fillStyle = "white"
-		ctx.fillRect(0, 0, canvas_1.width, canvas_1.height)
-
-		ctx.strokeStyle = "#38e1ff"
-		ctx.strokeWidth = 5
-		ctx.beginPath()
-		for (var i = 0; i < divWidth; i++) {
-			ctx.moveTo(i * cell, 0)
-			ctx.lineTo(i * cell, canvas_1.height)
-		}
-		for (var i = 0; i < divHeight; i++) {
-			ctx.moveTo(0, i * cell)
-			ctx.lineTo(canvas_1.width, i * cell)
-		}
-		ctx.stroke()
-	}
-
-	this.object = function(arg) {
-		arg.draw(ctx)
-	}
+	this.ctx = arg.context
+	this.cell = arg.cellsize
+	this.divWidth = Math.ceil(canvas_1.width/this.cell)
+	this.divHeight = Math.ceil(canvas_1.height/this.cell)
 }
+
+Draw.prototype.object = function(arg) {
+		if (typeof arg.draw == "function") {
+			arg.draw(this.ctx)
+		} else {
+			try {
+				arg.draw(this.ctx)
+			} catch (e) {
+
+			}
+			//console.log("draw type of arg is", typeof(arg.draw))
+		}
+}
+
+Draw.prototype.background = function() {
+	this.ctx.fillStyle = "white"
+	this.ctx.fillRect(0, 0, canvas_1.width, canvas_1.height)
+
+	this.ctx.strokeStyle = "black"//"#38e1ff" // black is also a nice colour
+	this.ctx.strokeWidth = 5
+	this.ctx.beginPath()
+	for (var i = 0; i < this.divWidth; i++) {
+		this.ctx.moveTo(i * this.cell, 0)
+		this.ctx.lineTo(i * this.cell, canvas_1.height)
+	}
+	for (var i = 0; i < this.divHeight; i++) {
+		this.ctx.moveTo(0, i * this.cell)
+		this.ctx.lineTo(canvas_1.width, i * this.cell)
+	}
+	this.ctx.stroke()
+}
+
 
 //================================================================================================
 //functions
 //================================================================================================
 
 function keyboardMouseSetup(arg) {
-	var x, y
 	var cell = arg.cellsize
 	var off = arg.canvasOffset
 
 	$("#canvas_1").mousedown(function(data) {
 		user.mouse.f = true
-		sqrX = Math.floor((data.pageX - off) / cell) * cell
-		sqrY = Math.floor((data.pageY - off) / cell) * cell
+		var sqrX = Math.floor((data.pageX - off) / cell) * cell
+		var sqrY = Math.floor((data.pageY - off) / cell) * cell
 
-		check = collision.checkPoint(new Point(data.pageX - off, data.pageY - off))
+		//This returns a list of values because I dont want to re-calculate some things
+		check = collision.checkObject(new Point(data.pageX - off, data.pageY - off))
 		if (check[0]) {
-			//if there is no object at that point. create an Grey box.
-			obj = new GreyBox(sqrX, sqrY, cell, cell)
-			obj.index = scene.objectsArray.nextRef()
-			if (user.curObj) {
-				user.curObj.focus(false)
-			}
-			user.curObj = obj
-			user.curObjRef = obj.index
-			scene.objectsArray.addObject(obj)
-			collision.addObjectReference([obj.index, check[1]]) //index and CollBox index
-			//Making sure the user object knows there wasn't a collision object to reference
-			user.mouse.sameObj = false
-		} else {
 			//There was something there so grab a reference to use later.
+			//console.log("mouse click was evaluated to true")
 			obj = scene.objectsArray.getObject(check[1])
 			if (user.curObj) {
 				//they are currently looking at an object
 				if (!user.curObj.equal(obj)) {
 					//and it was NOT the same object they collided with 
-					user.curObj.focus(false)
+					user.curObj.focus = false
 					//get the existing other one and set in focus
-					obj.focus(true)
+					obj.focus = true
 					user.curObj = obj
 					user.curObjRef = obj.index
 				} else {
@@ -558,14 +476,31 @@ function keyboardMouseSetup(arg) {
 			} else {
 				//user didn't have anything previously selected so just setup the object the
 				//mouse click collided with
-				obj.focus(true)
+				obj.focus = true
 				user.curObj = obj
 				user.curObjRef = obj.index
 			}
+		} else {
+			//if there is no object at that point. create an Grey box.
+			//console.log("mouse click was evaluated to false")
+			obj = new GreyBox(sqrX, sqrY, cell, cell)
+			obj.index = scene.objectsArray.nextRef()
+			if (user.curObj) {
+				user.curObj.focus = false
+			}
+			user.curObj = obj
+			user.curObjRef = obj.index
+			scene.objectsArray.addObject(obj)
+			collision.addObjectReference(check[1], obj.index) //CollBox indices and the obj.index
+			//Making sure the user object knows there wasn't a collision object to reference
+			user.mouse.sameObj = false
 		}
 	})
 
 	$("#canvas_1").mousemove(function(data) {
+		var sqrX = Math.floor((data.pageX - off) / cell) * cell
+		var sqrY = Math.floor((data.pageY - off) / cell) * cell
+
 		if (user.mouse.f) {
 			if (user.curObj) {
 				//this will just be moving the currently selected object.
@@ -586,12 +521,12 @@ function keyboardMouseSetup(arg) {
 			//they are currently looking at an object
 			if (user.mouse.sameObj) {
 				//and it was the same object they collided with 
-				if (user.curObj.focus()) {
-					user.curObj.focus(false)
+				if (user.curObj.focus) {
+					user.curObj.focus = false
 					user.curObj = null
 					user.curObjRef = null
 				} else {
-					user.curObj.focus(true)
+					user.curObj.focus = true
 				}
 				//Making sure this loop isn't entered without the correct click conditions.
 				user.mouse.sameObj = false
@@ -602,7 +537,7 @@ function keyboardMouseSetup(arg) {
 
 	$(document).keydown(function(data) {
 		if (user.curObj) {
-			if (user.curObj.focus()) {
+			if (user.curObj.focus) {
 				scene.objectsArray.removeObject(user.curObj.index)
 				collision.removeIndice(user.curObj.index)
 				user.curObj = null
@@ -631,15 +566,15 @@ onload = function () {
 	setInterval(function(){
 		draw.background()
 
-		//for (var i = 0; i < collision.box.length; i++) {
-		//	draw.object(collision.box[i])
+		//for (var i = 0; i < collision.collBoxes.length; i++) {
+		//	draw.object(collision.collBoxes[i])
 		//}
 		if (scene.objectsArray.length() > 0) {
 			for (var i = 0; i < scene.objectsArray.length(); i++) {
 				var x = scene.objectsArray.getObject(i)
-				if (x) {
+				if (x != "undefined") {
 					draw.object(x)
-				}
+				}				
 			}
 		}
 	}, 60)
