@@ -3,7 +3,8 @@
 //================================================================================================
 
 function Scene() {
-	this.canvasOffset = 10
+	this.canvasOffsetX = 8 // 7 or 8
+	this.canvasOffsetY = 7 // 6, 7 or 8
 	this.cellsize = 32 //cellsize
 	this.objectsArray = new MyArray() //objects array
 	this.context = null //context gets set in the onload function
@@ -448,15 +449,16 @@ Draw.prototype.background = function() {
 
 function keyboardMouseSetup(arg) {
 	var cell = arg.cellsize
-	var off = arg.canvasOffset
+	var offX = arg.canvasOffsetX
+	var offY = arg.canvasOffsetY
 
 	$("#canvas_1").mousedown(function(data) {
 		user.mouse.f = true
-		var sqrX = Math.floor((data.pageX - off) / cell) * cell
-		var sqrY = Math.floor((data.pageY - off) / cell) * cell
+		var sqrX = Math.floor((data.pageX - offX) / cell) * cell
+		var sqrY = Math.floor((data.pageY - offY) / cell) * cell
 
 		//This returns a list of values because I dont want to re-calculate some things
-		check = collision.checkObject(new Point(data.pageX - off, data.pageY - off))
+		check = collision.checkObject(new Point(data.pageX - offX, data.pageY - offY))
 		if (check[0]) {
 			//There was something there so grab a reference to use later.
 			//console.log("mouse click was evaluated to true")
@@ -498,8 +500,8 @@ function keyboardMouseSetup(arg) {
 	})
 
 	$("#canvas_1").mousemove(function(data) {
-		var sqrX = Math.floor((data.pageX - off) / cell) * cell
-		var sqrY = Math.floor((data.pageY - off) / cell) * cell
+		var sqrX = Math.floor((data.pageX - offX) / cell) * cell
+		var sqrY = Math.floor((data.pageY - offY) / cell) * cell
 
 		if (user.mouse.f) {
 			if (user.curObj) {

@@ -12,6 +12,7 @@ Would it also be possible to send calculations to the users computer to process 
 
 -------------------------------------------------------------------------------------
 done:
+-JS prototyping revision
 -object selection / toggling focus
 -deleting objects so that space can be used again.
 -collision bug 1 (object references)
