@@ -4,13 +4,14 @@
 
 function Scene() {
 	this.canvasOffsetX = 8 // 7 or 8
-	this.canvasOffsetY = 7 // 6, 7 or 8
+	this.canvasOffsetY = 8 // 7 or 8
 	this.cellsize = 32 //cellsize
 	this.objectsArray = new MyArray() //objects array
 	this.context = null //context gets set in the onload function
 	this.width = 0 //width
 	this.height = 0 //height
-	this.collisionGranularity = 2
+	//change this to be relative to the cellsize?
+	this.collisionGranularity = 3
 }
 
 //------------------------------------------------------------------------------------------------
@@ -25,7 +26,7 @@ function User() {
 
 //------------------------------------------------------------------------------------------------
 function MyArray(){
-	//These are used as two stacks
+	//These are used as a stack and an array.
 	this.objects = []
 	this.freeIndices = []
 }
@@ -347,12 +348,10 @@ Collision.prototype.checkObject = function(arg) {
 	var collBoxNums = []
 	var collBoxRefs = []
 	if (arg instanceof Point) {
-		//console.log("checkObj -> point")
 		//if bool gets set to a true value then the return will need to been given the
 		//index of the object it collided with.
 		for (var i = 0; i < this.collBoxes.length; i++) {
 			if (this.collBoxes[i].checkPoint(arg)) {
-				//console.log("collision evaluated:", arg, " to be inside of", this.collBoxes[i])
 				collBoxRefs = collBoxRefs.concat(this.collBoxes[i].objRefs)
 				if (collBoxNums.length == 1) {
 					console.log(arg, "collided with two or more collboxes")
@@ -361,42 +360,44 @@ Collision.prototype.checkObject = function(arg) {
 				collBoxNums = [i] //setting to a list so that when it gets returned can not
 				//worry about the number of collpolygons an instance of collpolygon 
 				//would've returned
-			} else {
-				//console.log("collision evaluated:",arg," to NOT be inside of", this.collBoxes[i])
 			}
 		}
 		for (var i = 0; i < collBoxRefs.length; i++) {
 			var x = scene.objectsArray.getObject(collBoxRefs[i])
-			//if (bool) {
-			//	console.log(arg, "collided with two or more objects;", x)
-			//}
 			if (x.checkPoint(arg)) {
 				bool = true
 				collObjRef = x.index
 			}
 		}
 		if (bool) {
-			return [bool, collObjRef] //return the reference of the obj that we collided with
+			//return the reference of the obj that we collided with
+			return [bool, collObjRef]
 		} else {
-			//console.log("this.collboxes -> false")
-			return [bool, collBoxNums] //return the box to add reference to
+			//return the box to add reference to
+			return [bool, collBoxNums]
 		}
 		
 	} else if (arg instanceof Polygon) {
 		
-		//for (var i = 0; i < this.collBoxes.length; i++) {
-		//	if (this.collBoxes[i].checkPolygon(arg)) {
-		//		x = x.concat(this.collBoxes[i].getReferences)
-		//		if (y == null) {
-		//			y = i
-		//		} else {
-		//			console.log("Collision.getIndices - CollPolygon didn't expect this")
-		//			console.log("and might not have given an appropriate result")
-		//		}
-		//		
-		//	}
-		//}
-		console.log("collision for polygon is not done yet")
+		for (var i = 0; i < this.collBoxes.length; i++) {
+			if (this.collBoxes[i].checkPolygon(arg)) {
+				x = x.concat(this.collBoxes[i].objRefs)
+				if (y == null) {
+					y = i
+				} else {
+					console.log("Collision.getIndices - CollPolygon didn't expect this")
+					console.log("and might not have given an appropriate result")
+				}
+				
+			}
+		}
+		if (bool) {
+			//return the reference of the obj that we collided with
+			return [bool, collObjRef]
+		} else {
+			//return the box to add reference to
+			return [bool, collBoxNums]
+		}
 	} else {
 		console.log("Collision.checkObj requires a point or polygon but got", arg)
 	}
@@ -407,8 +408,8 @@ function Draw(arg) {
 	//wants to write a couple of properties from the scene object
 	this.ctx = arg.context
 	this.cell = arg.cellsize
-	this.divWidth = Math.ceil(canvas_1.width/this.cell)
-	this.divHeight = Math.ceil(canvas_1.height/this.cell)
+	this.width = arg.width
+	this.height = arg.height
 }
 
 Draw.prototype.object = function(arg) {
@@ -425,19 +426,21 @@ Draw.prototype.object = function(arg) {
 }
 
 Draw.prototype.background = function() {
+	var divWidth = Math.ceil(this.width/this.cell)
+	var divHeight = Math.ceil(this.height/this.cell)
 	this.ctx.fillStyle = "white"
-	this.ctx.fillRect(0, 0, canvas_1.width, canvas_1.height)
+	this.ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-	this.ctx.strokeStyle = "black"//"#38e1ff" // black is also a nice colour
+	this.ctx.strokeStyle = "#38e1ff" // black is also a nice colour
 	this.ctx.strokeWidth = 5
 	this.ctx.beginPath()
-	for (var i = 0; i < this.divWidth; i++) {
+	for (var i = 0; i < divWidth + this.cell; i++) {
 		this.ctx.moveTo(i * this.cell, 0)
-		this.ctx.lineTo(i * this.cell, canvas_1.height)
+		this.ctx.lineTo(i * this.cell, canvas.height)
 	}
-	for (var i = 0; i < this.divHeight; i++) {
+	for (var i = 0; i < divHeight; i++) {
 		this.ctx.moveTo(0, i * this.cell)
-		this.ctx.lineTo(canvas_1.width, i * this.cell)
+		this.ctx.lineTo(canvas.width, i * this.cell)
 	}
 	this.ctx.stroke()
 }
@@ -452,7 +455,8 @@ function keyboardMouseSetup(arg) {
 	var offX = arg.canvasOffsetX
 	var offY = arg.canvasOffsetY
 
-	$("#canvas_1").mousedown(function(data) {
+	$("#canvas").mousedown(function(data) {
+		console.log("down")
 		user.mouse.f = true
 		var sqrX = Math.floor((data.pageX - offX) / cell) * cell
 		var sqrY = Math.floor((data.pageY - offY) / cell) * cell
@@ -499,11 +503,12 @@ function keyboardMouseSetup(arg) {
 		}
 	})
 
-	$("#canvas_1").mousemove(function(data) {
+	$("#canvas").mousemove(function(data) {
 		var sqrX = Math.floor((data.pageX - offX) / cell) * cell
 		var sqrY = Math.floor((data.pageY - offY) / cell) * cell
 
 		if (user.mouse.f) {
+			console.log("move")
 			if (user.curObj) {
 				//this will just be moving the currently selected object.
 				//fine movement until mouseup at which point, snap to box
@@ -518,6 +523,7 @@ function keyboardMouseSetup(arg) {
 	})
 
 	$(document).mouseup(function(data) {
+		console.log("up")
 		//user is finishing the click.
 		if (user.curObj) {
 			//they are currently looking at an object
@@ -538,6 +544,7 @@ function keyboardMouseSetup(arg) {
 	})
 
 	$(document).keydown(function(data) {
+		//There is a problem here somewhere.
 		if (user.curObj) {
 			if (user.curObj.focus) {
 				scene.objectsArray.removeObject(user.curObj.index)
@@ -548,15 +555,35 @@ function keyboardMouseSetup(arg) {
 	})
 }
 
+function ScreenChecker(arg) {
+	x = arg.width
+	y = arg.height
+	if (x > window.outerWidth - 20 || x < window.outerWidth - 20) {
+		canvas.width = window.outerWidth - 20
+		scene.width = canvas.width
+		draw.width = canvas.width
+		console.log("x is true")
+	}
+	if (y > window.outerHeight - 117 || y < window.outerHeight - 117) {
+		canvas.height = window.outerHeight - 117
+		scene.height = canvas.height
+		draw.divHeight = canvas.height
+		console.log("y is true")
+	}
+}
+
 //================================================================================================
 //runtime
 //================================================================================================
 
 onload = function () {
+	canvas.width = window.outerWidth - 20 // the last values before scroll bars.
+	canvas.height = window.outerHeight - 117 // the last values before scroll bars.
+
 	scene = new Scene()
-	scene.context = document.getElementById("canvas_1").getContext("2d")
-	scene.width = document.getElementById("canvas_1").width
-	scene.height = document.getElementById("canvas_1").height
+	scene.context = document.getElementById("canvas").getContext("2d")
+	scene.width = document.getElementById("canvas").width
+	scene.height = document.getElementById("canvas").height
 
 	collision = new Collision(scene)
 
@@ -566,11 +593,11 @@ onload = function () {
 	keyboardMouseSetup(scene)
 
 	setInterval(function(){
+		//This just resizes things it the screen gets moved around.
+		ScreenChecker(scene)
+
 		draw.background()
 
-		//for (var i = 0; i < collision.collBoxes.length; i++) {
-		//	draw.object(collision.collBoxes[i])
-		//}
 		if (scene.objectsArray.length() > 0) {
 			for (var i = 0; i < scene.objectsArray.length(); i++) {
 				var x = scene.objectsArray.getObject(i)
@@ -579,5 +606,5 @@ onload = function () {
 				}				
 			}
 		}
-	}, 60)
+	}, 30)
 }

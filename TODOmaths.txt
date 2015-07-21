@@ -4,11 +4,13 @@ first things first:
 
 -------------------------------------------------------------------------------------
 on the side:
+-distinguish between fullscreen and windowed mode when resizing
 
 -------------------------------------------------------------------------------------
 ideas:
-creating, saving and loading new scenes
-Would it also be possible to send calculations to the users computer to process more?
+-change collision reference boxes to be relative to the cellsize?
+-creating, saving and loading new scenes
+-Would it also be possible to send calculations to the users computer to process more?
 
 -------------------------------------------------------------------------------------
 done:
