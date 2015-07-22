@@ -207,6 +207,9 @@ Polygon.prototype.findClosestPoints = function(arg) {
 				shortestDistance = a
 				closestPoints = [x2, y2, x1, y1]
 			}
+			if (shortestDistance == 0) {
+				return closestPoints
+			}
 		}
 		return closestPoints
 	} else if (arg instanceof Polygon) {
@@ -379,21 +382,21 @@ Collision.prototype.checkObject = function(arg) {
 		
 		for (var i = 0; i < this.collBoxes.length; i++) {
 			if (this.collBoxes[i].checkPolygon(arg)) {
-				x = x.concat(this.collBoxes[i].objRefs)
-				if (y == null) {
-					y = i
-				} else {
-					console.log("Collision.getIndices - CollPolygon didn't expect this")
-					console.log("and might not have given an appropriate result")
-				}
-				
+				collBoxRefs = collBoxRefs.concat(this.collBoxes[i].objRefs)
+				collBoxNums[collBoxNums.length] = i
+			}
+		}
+		for (var i = 0; i < collBoxRefs.length; i++) {
+			x = scene.objectsArray.getObject(collBoxRefs[i])
+			if (x.checkPolygon(arg)) {
+				bool = true
 			}
 		}
 		if (bool) {
 			//return the reference of the obj that we collided with
 			return [bool, collObjRef]
 		} else {
-			//return the box to add reference to
+			//return the boxes to add reference to
 			return [bool, collBoxNums]
 		}
 	} else {
@@ -452,7 +455,6 @@ function keyboardMouseSetup(arg) {
 	var cell = arg.cellsize
 
 	$("#canvas").mousedown(function(data) {
-		console.log("down")
 		user.mouse.f = true
 		var sqrX = Math.floor(data.pageX / cell) * cell
 		var sqrY = Math.floor(data.pageY / cell) * cell
@@ -504,14 +506,21 @@ function keyboardMouseSetup(arg) {
 		var sqrY = Math.floor(data.pageY / cell) * cell
 
 		if (user.mouse.f) {
-			console.log("move")
 			if (user.curObj) {
-				//this will just be moving the currently selected object.
-				//fine movement until mouseup at which point, snap to box
-				//check = collision.checkPolygon(user.curObj)
-				//if (check[0]) {
-				//	console.log("HERE!")
-				//}
+				oldX = user.curObj.x
+				oldY = user.curObj.y
+				//this will move the currently selected object to a new box,
+				//unless there was a collision.
+				user.curObj.x = sqrX
+				user.curObj.y = sqrY
+				check = collision.checkObject(user.curObj)
+				if (check) {
+					console.log("collision undetected.")
+				} else {
+					console.log("Collision detected.")
+					user.curObj.x = oldX
+					user.curObj.y = oldY
+				}
 			} else {
 				return
 			}
@@ -519,7 +528,6 @@ function keyboardMouseSetup(arg) {
 	})
 
 	$(document).mouseup(function(data) {
-		console.log("up")
 		//user is finishing the click.
 		if (user.curObj) {
 			//they are currently looking at an object
@@ -558,13 +566,11 @@ function ScreenChecker(arg) {
 		canvas.width = window.outerWidth - 20
 		scene.width = canvas.width
 		draw.width = canvas.width
-		console.log("x is true")
 	}
 	if (y > window.outerHeight - 117 || y < window.outerHeight - 117) {
 		canvas.height = window.outerHeight - 117
 		scene.height = canvas.height
 		draw.divHeight = canvas.height
-		console.log("y is true")
 	}
 }
 
@@ -597,7 +603,7 @@ onload = function () {
 		if (scene.objectsArray.length() > 0) {
 			for (var i = 0; i < scene.objectsArray.length(); i++) {
 				var x = scene.objectsArray.getObject(i)
-				if (x != "undefined") {
+				if (x) {
 					draw.object(x)
 				}				
 			}
