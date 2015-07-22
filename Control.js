@@ -8,8 +8,7 @@ function Scene() {
 	this.context = null //context gets set in the onload function
 	this.width = 0 //width
 	this.height = 0 //height
-	//change this to be relative to the cells?
-	this.collisionGranularity = 3
+	this.collisionGranularity = 10 //this is relative to the cellsize
 }
 
 //------------------------------------------------------------------------------------------------
@@ -272,6 +271,8 @@ GreyBox.prototype.draw = function(arg) {
 		arg.fillStyle = "black"
 	}
 	arg.fillRect(this.x, this.y, this.w, this.h)
+	arg.strokeStyle = "red"
+	arg.strokeRect(this.x, this.y, this.w, this.h)
 }
 
 //------------------------------------------------------------------------------------------------
@@ -298,8 +299,8 @@ CollBox.prototype.removeIndex = function(arg) {
 }
 
 CollBox.prototype.draw = function(arg) {
-	arg.fillStyle = "#38e1ff"
-	arg.fillRect(this.x, this.y, this.w, this.h)
+	arg.strokeStyle = "red"
+	arg.strokeRect(this.x, this.y, this.w, this.h)
 }
 
 //------------------------------------------------------------------------------------------------
@@ -308,8 +309,8 @@ function Collision(arg) {
 	//them.
 	this.collBoxes = []
 	var num = arg.collisionGranularity
-	var divW = arg.width / num
-	var divH = arg.height / num
+	var divW = arg.cellsize * num
+	var divH = arg.cellsize * num
 
 	//setup a number of collboxes
 	for (var i = 0; i < num; i++) {
@@ -507,19 +508,24 @@ function keyboardMouseSetup(arg) {
 
 		if (user.mouse.f) {
 			if (user.curObj) {
-				oldX = user.curObj.x
-				oldY = user.curObj.y
 				//this will move the currently selected object to a new box,
 				//unless there was a collision.
-				user.curObj.x = sqrX
-				user.curObj.y = sqrY
-				check = collision.checkObject(user.curObj)
-				if (check) {
-					console.log("collision undetected.")
+				oldX = user.curObj.x
+				oldY = user.curObj.y
+				if (sqrX != user.curObj.x || sqrY != user.curObj.y) {
+					user.curObj.x = sqrX
+					user.curObj.y = sqrY
+					check = collision.checkObject(user.curObj)
 				} else {
+					//
+				}
+				
+				if (check[0]) {
 					console.log("Collision detected.")
 					user.curObj.x = oldX
 					user.curObj.y = oldY
+				} else {
+					console.log("collision undetected.")
 				}
 			} else {
 				return
@@ -600,6 +606,9 @@ onload = function () {
 
 		draw.background()
 
+		for (var i = 0; i < collision.collBoxes.length; i++) {
+			draw.object(collision.collBoxes[i])
+		}
 		if (scene.objectsArray.length() > 0) {
 			for (var i = 0; i < scene.objectsArray.length(); i++) {
 				var x = scene.objectsArray.getObject(i)

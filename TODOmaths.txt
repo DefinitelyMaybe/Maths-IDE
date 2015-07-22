@@ -8,12 +8,11 @@ on the side:
 
 -------------------------------------------------------------------------------------
 ideas:
--change collision reference boxes to be relative to the cellsize?
 -creating, saving and loading new scenes
--Would it also be possible to send calculations to the users computer to process more?
 
 -------------------------------------------------------------------------------------
 done:
+-change collision reference boxes to be relative to the cellsize
 -JS prototyping revision
 -object selection / toggling focus
 -deleting objects so that space can be used again.
