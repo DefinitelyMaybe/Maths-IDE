@@ -11,6 +11,8 @@ function Scene() {
 	this.collisionGranularity = 10 //this is relative to the cellsize
 }
 
+Scene.prototype = Object.create(Object.prototype)
+
 //------------------------------------------------------------------------------------------------
 function User() {
  	this.curObj = null //current object
@@ -21,12 +23,16 @@ function User() {
 	}
 }
 
+User.prototype = Object.create(Object.prototype)
+
 //------------------------------------------------------------------------------------------------
 function MyArray(){
 	//These are used as a stack and an array.
 	this.objects = []
 	this.freeIndices = []
 }
+
+MyArray.prototype = Object.create(Array.prototype)
 
 MyArray.prototype.length = function() {
 	return this.objects.length
@@ -85,6 +91,8 @@ function Point(x, y) {
 	this.y = y
 }
 
+Point.prototype = Object.create(Object.prototype)
+
 Point.prototype.equal = function(arg) {
 	if (this.x == arg.x) {
 		if (this.y == arg.y) {
@@ -105,6 +113,8 @@ function Polygon(x, y, w, h) {
 	this.w = w
 	this.h = h
 }
+
+Polygon.prototype = Object.create(Object.prototype)
 
 Polygon.prototype.equal = function(arg) {
 	if (this.x == arg.x) {
@@ -260,6 +270,8 @@ function GreyBox(x, y, w, h) {
 
 	this.focus = true //This is for checking it the user has it selected.
 	this.index = null //Stores it's index value inside of scene.objectsArray
+	//Not used yet.
+	this.boxRef = [] //store the value of the collBox(s) that this object is within
 }
 
 GreyBox.prototype = Object.create(Polygon.prototype)
@@ -303,7 +315,11 @@ CollBox.prototype.draw = function(arg) {
 	arg.strokeRect(this.x, this.y, this.w, this.h)
 }
 
-//------------------------------------------------------------------------------------------------
+
+//================================================================================================
+//functions
+//================================================================================================
+
 function Collision(arg) {
 	//This breaks down the screen into smaller squares that store references to the objects within
 	//them.
@@ -405,6 +421,137 @@ Collision.prototype.checkObject = function(arg) {
 	}
 }
 
+Collision.prototype.checkPolygon = function(arg) {
+	if (arg instanceof Collision) {
+		x = this.findClosestPoints(arg)
+		a = new Point(x[0], x[1])
+		b = new Point(x[2], x[3])
+		return (this.checkPoint(a) || arg.checkPoint(b))
+	} else {
+		console.log("Polygon.checkPolygon requires a Polygon but got", arg)
+		return
+	}
+}
+
+Collision.prototype.checkPoint = function(arg) {
+	if (arg instanceof Point ) {
+		numX = arg.x
+		numY = arg.y
+		if (this.h >= 0) {
+			//height is postive
+			if (this.w >= 0) {
+				//width is postive
+				if ((this.x <= numX) && (this.x + this.w >= numX)) {
+					if ((this.y <= numY) && (this.y + this.h >= numY)) {
+						return true
+					}
+				}
+			else
+				//width is negative
+				if ((this.x >= numX) && (this.x + this.w <= numX)) {
+					if ((this.y <= numY) && (this.y + this.h >= numY)) {
+						return true
+					}
+				}
+			}
+		} else {
+			//height is negative
+			if (this.w >= 0) {
+				//width is postive
+				if ((this.x <= numX) && (this.x + this.w >= numX)) {
+					if ((this.y >= numY) && (this.y + this.h <= numY)) {
+						return true
+					}
+				}
+			} else {
+				//width is negative
+				if ((this.x >= numX) && (this.x + this.w <= numX)) {
+					if ((this.y >= numY) && (this.y + this.h <= numY)) {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	} else {
+		console.log("collision.checkPoint() needed a point but got", arg)
+		return
+	}
+}
+
+Collision.prototype.findClosestPoints = function(arg) {
+	var shortestDistance = Infinity
+	var closestPoints = []
+	if (arg instanceof Point) {
+		x2 = arg.x
+		y2 = arg.y
+		for (var i = 0; i < 4; i++) {
+			if (i == 0) {
+			   	x1 = this.x
+			   	y1 = this.y
+			} else if (i == 1) {
+				x1 = this.x + this.w
+				y1 = this.y
+			} else if (i == 2) {
+				x1 = this.x
+				y1 = this.y + this.h
+			} else if (i == 3) {
+				x1 = this.x + this.w
+				y1 = this.y + this.h
+			}
+			a = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+			if (a < shortestDistance) {
+				shortestDistance = a
+				closestPoints = [x2, y2, x1, y1]
+			}
+			if (shortestDistance == 0) {
+				return closestPoints
+			}
+		}
+		return closestPoints
+	} else if (arg instanceof Polygon) {
+		for (var i = 0; i < 4; i++) {
+			if (i == 0) {
+			   	x1 = this.x
+			   	y1 = this.y
+			} else if (i == 1) {
+				x1 = this.x + this.w
+				y1 = this.y
+			} else if (i == 2) {
+				x1 = this.x
+				y1 = this.y + this.h
+			} else if (i == 3) {
+				x1 = this.x + this.w
+				y1 = this.y + this.h
+			}
+			for (var j = 0; j < 4; j++) {
+				if (j == 0) {
+					x2 = arg.x
+					y2 = arg.y
+				}else if (j == 1) {
+					x2 = arg.x + arg.w
+					y2 = arg.y
+				} else if (j == 2) {
+					x2 = arg.x
+					y2 = arg.y + arg.h
+				} else if (j == 3) {
+					x2 = arg.x + arg.w
+					y2 = arg.y + arg.h
+				}
+				a = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+				if (a < shortestDistance) {
+					shortestDistance = a
+					closestPoints = [x2, y2, x1, y1]
+				}
+			}
+		}
+		return closestPoints
+	} else {
+		console.log("Polygon.findClosestPoints needs a Point or Polygon but got", arg)
+		return
+	}
+}
+
 //------------------------------------------------------------------------------------------------
 function Draw(arg) {
 	//wants to write a couple of properties from the scene object
@@ -447,11 +594,7 @@ Draw.prototype.background = function() {
 	this.ctx.stroke()
 }
 
-
-//================================================================================================
-//functions
-//================================================================================================
-
+//------------------------------------------------------------------------------------------------
 function keyboardMouseSetup(arg) {
 	var cell = arg.cellsize
 
@@ -565,6 +708,7 @@ function keyboardMouseSetup(arg) {
 	})
 }
 
+//------------------------------------------------------------------------------------------------
 function ScreenChecker(arg) {
 	x = arg.width
 	y = arg.height
