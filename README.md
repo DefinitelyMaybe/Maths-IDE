@@ -1,21 +1,19 @@
 # IDE
 Work in progress. Ideas change.
 
-This is an attempt to create an interface for which someone can work on their ideas.
+This is an attempt to create an web interface for which anyone can work on their ideas/models.
 
-It started back in maths 208 with matrices but creating a solution for developing more generally is
-the goal.
-
-Sticking with maths for the moment, current interfaces that I know of are simply a search
-box or have very limited interactivity.
-
+Background:
+It started back in a university maths course which dealt with matrices. The main issue I had when trying to use MATLAB or other web tools was their interfaces. You've either got a search box or you're comfortable with the command line. Creating a solution for developing more generally is the goal.
 
 -------------------------------------------------------------------------------------
-MustDo:
--moving objects
+Priorities:
+-Strings/markdown
+-functions
+-data
 
 -------------------------------------------------------------------------------------
-MightDo:
--distinguish between fullscreen and windowed mode when resizing
+Wish list:
+-Freehand drawing
 
 -------------------------------------------------------------------------------------
