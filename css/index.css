@@ -25,3 +25,8 @@ table {
   font-size: 150%;
   height: 41px;
 }
+
+nav {
+  position: absolute;
+  background-color: grey;
+}

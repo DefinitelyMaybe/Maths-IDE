@@ -13,14 +13,31 @@ class ReferenceStack {
   constructor() {
     this.boxRefs = []
     this.freeBoxRefs = []
+
+    this.matRefs = []
+    this.freeMatRefs = []
   }
-  createBoxRef(){
-    if (this.freeBoxRefs.length > 0) {
-      return this.freeBoxRefs.pop()
-    } else {
-      let a = "box" + this.boxRefs.length
-      this.boxRefs.push(a)
-      return a
+
+  createRef(type){
+    switch (type) {
+      case "matrix":
+        if (this.freeMatRefs.length > 0) {
+          return this.freeMatRefs.pop()
+        } else {
+          let a = "matrix" + this.matRefs.length
+          this.matRefs.push(a)
+          return a
+        }
+        break;
+      default:
+        //default will create an empty 1x1 box.
+        if (this.freeBoxRefs.length > 0) {
+          return this.freeBoxRefs.pop()
+        } else {
+          let a = "box" + this.boxRefs.length
+          this.boxRefs.push(a)
+          return a
+        }
     }
   }
 }
@@ -38,20 +55,44 @@ class Scene {
 
 //-----------------------------------------------------------------------
 //Functions
-function createBox() {
-  let ref = mainScene.refStack.createBoxRef()
-  //create the html object
-  let x = document.createElement("table")
-  $(x).attr("id", ref)
-  $(x).addClass("box")
-  let y = document.createElement("td")
-  y.innerHTML = "Placeholder text."
-  x.appendChild(y)
-  document.body.appendChild(x)
-  $("#"+ref).click( function(){
-    console.log(ref + " was clicked.");
-  });
-  return ref
+function create(type) {
+  //creates an html object and returns a reference to that object
+  let ref
+  let x
+  let y
+  switch (type) {
+    case "matrix":
+      ref = mainScene.refStack.createRef("box")
+      //create the html object
+      x = document.createElement("table")
+      $(x).attr("id", ref)
+      $(x).addClass("box")
+      y = document.createElement("td")
+      y.innerHTML = "Matrix"
+      x.appendChild(y)
+      document.body.appendChild(x)
+      $("#"+ref).click( function(){
+        //console.log(ref + " was clicked.");
+      });
+      return ref
+      break;
+    default:
+      //by default will create a empty 1x1 box
+      ref = mainScene.refStack.createRef("box")
+      //create the html object
+      x = document.createElement("table")
+      $(x).attr("id", ref)
+      $(x).addClass("box")
+      y = document.createElement("td")
+      y.innerHTML = "Placeholder text."
+      x.appendChild(y)
+      document.body.appendChild(x)
+      $("#"+ref).click( function(){
+        //console.log(ref + " was clicked.");
+      });
+      return ref
+
+  }
 }
 
 function getClosestBoxRef(element) {
@@ -69,7 +110,14 @@ $("body").on("click", function(event){
   let key = event.which
   let type = event.type
 
-  console.log(type + " " + key);
+  //console.log(type + " " + key);
+  let ctx = $("#contextmenu[hidden]")
+  
+  if (ctx) {
+    console.log("yup");
+  } else {
+    console.log("nupe");
+  }
 
   if (type === "click" && key === 1) {
     // TODO: if location is free then create new box otherwise select box
@@ -81,16 +129,23 @@ $("body").on("click", function(event){
       //yes? select it.
       mainScene.currentObject = rootBox
     } else {
-      //no? create a new box
-      let x = Math.floor(event.pageX/mainScene.cellSize) * mainScene.cellSize
-      let y = Math.floor(event.pageY/mainScene.cellSize) * mainScene.cellSize
-      let refx = createBox()
-      $("#"+refx).css({"top": y+"px", "left": x+"px",})
-      mainScene.currentObject = refx
+      // TODO: Left click on screen does...
+      //let refx = create("box")
+      //$("#"+refx).css({"top": y+"px", "left": x+"px",})
+      //mainScene.currentObject = refx
     }
   }
 });
 
+$("body").contextmenu(function(){
+  console.log("right click?");
+  let x = Math.floor(event.pageX/mainScene.cellSize) * mainScene.cellSize
+  let y = Math.floor(event.pageY/mainScene.cellSize) * mainScene.cellSize
+  $("#contextmenu").css({"top": y+"px", "left": x+"px",})
+  $("#contextmenu").show()
+});
+
 $(document).ready(function(){
  console.log("here we go!");
+
 });
