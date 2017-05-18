@@ -111,8 +111,8 @@ $("body").on("click", function(event){
   let type = event.type
 
   //console.log(type + " " + key);
-  let ctx = $("#contextmenu[hidden]")
-  
+  let ctx = $("#contextmenu")
+
   if (ctx) {
     console.log("yup");
   } else {
@@ -142,6 +142,9 @@ $("body").contextmenu(function(){
   let x = Math.floor(event.pageX/mainScene.cellSize) * mainScene.cellSize
   let y = Math.floor(event.pageY/mainScene.cellSize) * mainScene.cellSize
   $("#contextmenu").css({"top": y+"px", "left": x+"px",})
+  if (true) {
+
+  }
   $("#contextmenu").show()
 });
 
