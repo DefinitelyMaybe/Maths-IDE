@@ -1,3 +1,5 @@
+/* Element styles definied below */
+
 html {
   height: 100%;
 }
@@ -27,6 +29,17 @@ table {
 }
 
 nav {
+  position: absolute;
+  background-color: grey;
+}
+
+/* Custom element styles definied below */
+
+origin-node {
+  background-color: rgb(0, 0, 0);
+}
+
+origin-menu {
   position: absolute;
   background-color: grey;
 }

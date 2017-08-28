@@ -3,12 +3,11 @@
 //const main = remote.require('./main.js');
 const $ = require('jquery');
 
-//-----------------------------------------------------------------------
-//Globals
+//------------------Globals------------------
 let mainScene
+document.registerElement("origin-node");
 
-//-----------------------------------------------------------------------
-//Classes
+//------------------Classes------------------
 class ReferenceStack {
   constructor() {
     this.boxRefs = []
@@ -53,8 +52,28 @@ class Scene {
   }
 }
 
-//-----------------------------------------------------------------------
-//Functions
+class Node extends HTMLElement {
+  constructor(nid, contents) {
+    super();
+    this.name = "node";
+    this.nid = nid;
+    this.contents = contents;
+
+    this.addEventListener("click", e => {
+      console.log("" + this.name + " #" + this.nid + " was clicked");
+    })
+  }
+
+  print(){
+    output = this.name + " #" + this.nid + "\n";
+    if (this.contents != undefined) {
+      output = output + this.contents.print() + "\n";
+    }
+    return output;
+  }
+}
+
+//------------------Functions------------------
 function create(type) {
   //creates an html object and returns a reference to that object
   let ref
@@ -102,9 +121,12 @@ function getClosestBoxRef(element) {
     return $(box).attr("id")
   }
 }
-//-----------------------------------------------------------------------
-//window life cycle
+
+//document.customElements.whenDefined('origin-node').then(() => {console.log('origin-node defined.');});
+
+//------------------binding callbacks/initialization------------------
 mainScene = new Scene(40)
+//customElements.define("origin-node", Node);
 
 $("body").on("click", function(event){
   let key = event.which
@@ -149,6 +171,6 @@ $("body").contextmenu(function(){
 });
 
 $(document).ready(function(){
- console.log("here we go!");
+ console.log("Ready!");
 
 });
