@@ -5,7 +5,6 @@ const $ = require('jquery');
 
 //------------------Globals------------------
 let mainScene
-document.registerElement("origin-node");
 
 //------------------Classes------------------
 class ReferenceStack {
@@ -52,28 +51,10 @@ class Scene {
   }
 }
 
-class Node extends HTMLElement {
-  constructor(nid, contents) {
-    super();
-    this.name = "node";
-    this.nid = nid;
-    this.contents = contents;
-
-    this.addEventListener("click", e => {
-      console.log("" + this.name + " #" + this.nid + " was clicked");
-    })
-  }
-
-  print(){
-    output = this.name + " #" + this.nid + "\n";
-    if (this.contents != undefined) {
-      output = output + this.contents.print() + "\n";
-    }
-    return output;
-  }
-}
-
 //------------------Functions------------------
+function test1() {
+  console.log("test complete.");
+}
 function create(type) {
   //creates an html object and returns a reference to that object
   let ref
@@ -137,6 +118,7 @@ $("body").on("click", function(event){
 
   if (ctx) {
     console.log("yup");
+    ctx.hide()
   } else {
     console.log("nupe");
   }
@@ -164,9 +146,6 @@ $("body").contextmenu(function(){
   let x = Math.floor(event.pageX/mainScene.cellSize) * mainScene.cellSize
   let y = Math.floor(event.pageY/mainScene.cellSize) * mainScene.cellSize
   $("#contextmenu").css({"top": y+"px", "left": x+"px",})
-  if (true) {
-
-  }
   $("#contextmenu").show()
 });
 
