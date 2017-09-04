@@ -84,7 +84,7 @@ function create(type) {
       $(x).attr("id", ref)
       $(x).addClass("box")
       y = document.createElement("td")
-      y.innerHTML = "Placeholder text."
+      y.innerHTML = "placeholder"
       x.appendChild(y)
       document.body.appendChild(x)
       $("#"+ref).click( function(){
@@ -103,51 +103,67 @@ function getClosestBoxRef(element) {
   }
 }
 
-//document.customElements.whenDefined('origin-node').then(() => {console.log('origin-node defined.');});
-
-//------------------binding callbacks/initialization------------------
-mainScene = new Scene(40)
-//customElements.define("origin-node", Node);
-
 $("body").on("click", function(event){
   let key = event.which
   let type = event.type
-
-  //console.log(type + " " + key);
   let ctx = $("#contextmenu")
 
-  if (ctx) {
-    console.log("yup");
-    ctx.hide()
-  } else {
-    console.log("nupe");
-  }
-
-  if (type === "click" && key === 1) {
+  //console.log(type + " " + key);
+  if (ctx.is(":visible")) {
+    let menu = event.target.closest(".menu")
+    if (menu) {
+      console.log("clicked on menu right?");
+    } else {
+      ctx.hide()
+    }
+  } else if (type === "click" && key === 1) {
     // TODO: if location is free then create new box otherwise select box
     //Does (x, y) collide with any objects in the scene?
     //If this function returns something other than undefined then yes (x, y) hit an object
     let rootBox = getClosestBoxRef(event.target)
 
     if (rootBox) {
-      //yes? select it.
+      //newly created object
+      //select it.
       mainScene.currentObject = rootBox
+      //
     } else {
       // TODO: Left click on screen does...
-      //let refx = create("box")
-      //$("#"+refx).css({"top": y+"px", "left": x+"px",})
-      //mainScene.currentObject = refx
+      let refx = create("box")
+      let x = Math.floor(event.pageX/mainScene.cellSize) * mainScene.cellSize
+      let y = Math.floor(event.pageY/mainScene.cellSize) * mainScene.cellSize
+      $("#"+refx).css({"top": y+"px", "left": x+"px",})
+      mainScene.currentObject = refx
     }
   }
 });
 
 $("body").contextmenu(function(){
-  console.log("right click?");
+  //console.log("right click?");
+  //fade body to background to highlight context menu
   let x = Math.floor(event.pageX/mainScene.cellSize) * mainScene.cellSize
   let y = Math.floor(event.pageY/mainScene.cellSize) * mainScene.cellSize
   $("#contextmenu").css({"top": y+"px", "left": x+"px",})
   $("#contextmenu").show()
 });
+
+$(".box").mousemove(function(event){
+  console.log(event);
+  let x = Math.floor(event.pageX/mainScene.cellSize) * mainScene.cellSize
+  let y = Math.floor(event.pageY/mainScene.cellSize) * mainScene.cellSize
+  //$("#"+refx).css({"top": y+"px", "left": x+"px",})
+});
+
+$(".box").on("click", function(event){
+  console.log("event");
+  let x = Math.floor(event.pageX/mainScene.cellSize) * mainScene.cellSize
+  let y = Math.floor(event.pageY/mainScene.cellSize) * mainScene.cellSize
+  //$("#"+refx).css({"top": y+"px", "left": x+"px",})
+});
+
+//------------------binding callbacks/initialization------------------
+mainScene = new Scene(40)
+//customElements.define("origin-node", Node);
 
 $(document).ready(function(){
  console.log("Ready!");
