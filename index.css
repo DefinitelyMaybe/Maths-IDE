@@ -35,6 +35,7 @@ nav {
   border: 2px;
   border-style: solid;
   border-color: grey;
+  z-index: 99;
 }
 
 /* Custom element styles definied below */
