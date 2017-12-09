@@ -8,12 +8,16 @@ It started back in a university maths course which dealt with matrices. The main
 
 -------------------------------------------------------------------------------------
 Priorities:
--Strings/markdown
--functions
--data
+-Creation
+  -Strings/variables
+  -functions
+  -data/graphs/tables
+-Calculate
+-Encapsulate
+-Navigate
 
 -------------------------------------------------------------------------------------
 Wish list:
--Freehand drawing
+-Freehand drawing in combination with an IR whiteboard
 
 -------------------------------------------------------------------------------------
