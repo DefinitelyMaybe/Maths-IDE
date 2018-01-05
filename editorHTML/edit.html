@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Edit</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'editor/css/master.css' %}">
+    <script src="{% static 'editor/js/edit.js' %}" charset="utf-8"></script>
+  </head>
+  <body>
+    <table id="nodesTable">
+      <tbody id="nodeRows">
+        <tr>
+          <th>Nodes</th>
+        </tr>
+      </tbody>
+    </table>
+    <h1>Options</h1>
+    <a href="{% url 'home' %}">home</a>
+    <form id="editForm">
+    </form>
+    <h1>Calculate</h1>
+    <button type="button" onclick="printGraph()">print graph to console</button>
+    <button type="button" onclick="calculateGraph()">calcute all values</button>
+    <h1>Create</h1>
+    <button type="button" onclick="createNode('add')">Add</button>
+    <button type="button" onclick="createNode('variable')">Variable</button>
+    <h1>Save</h1>
+    <form class="" action="{% url 'load' %}" method="post">
+      {% csrf_token %}
+      <button type="button" onclick="saveToJSON()">save current graph</button>
+      <p>The JSON representation of your graph should come up below</p>
+      <p>submitting takes you to the load graph page with the contents of the textarea below</p>
+      <textarea id="saveFormTextArea" name="textareaNodesJSON" rows="8" cols="80">{% if JSON %}{{ JSON }}{% endif %}</textarea>
+      <input type="submit" name="value" value="Submit">
+    </form>
+  </body>
+</html>
