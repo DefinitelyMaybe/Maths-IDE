@@ -13,17 +13,14 @@ require('electron-reload')
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
-/*-----------------------------------------------------------------------
-Classes
------------------------------------------------------------------------*/
 
-/*-----------------------------------------------------------------------
-Functions
------------------------------------------------------------------------*/
+// Classes
+
+// Functions
 function createWindow () {
   // Create the browser window.
   // TODO: frame: false
-  mainWindow = new BrowserWindow({width: 1440, height: 900, show:false, frame:false})
+  mainWindow = new BrowserWindow({width: 800, height: 600, show:false, frame:true})
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
@@ -46,9 +43,9 @@ function createWindow () {
     mainWindow = null
   })
 }
-/*-----------------------------------------------------------------------
-App life cycle
------------------------------------------------------------------------*/
+
+// App life cycle
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -74,9 +71,8 @@ app.on('activate', function () {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
-/*-----------------------------------------------------------------------
-Exported Functions things like file i/o, native calls, db calls, window management
------------------------------------------------------------------------*/
+// Exported Functions
+// things like file i/o, native calls, db calls, window management
 exports.getCellSize = function(){
   return "There is no spoon.";
 }
