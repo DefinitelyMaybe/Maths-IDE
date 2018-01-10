@@ -1,5 +1,5 @@
 let SCENE_Graph
-
+console.log("hello ");
 class Node {
   constructor(nodeType, nodeValue) {
     if (!nodeValue) {
@@ -14,10 +14,10 @@ class Node {
   }
 
   createNodeHtml(){
-    let newRow = document.createElement("tr")
+    let newRow = Document.createElement("tr")
 
     // placeholder for the html table
-    let placeholder = document.createElement("td")
+    let placeholder = Document.createElement("td")
     placeholder.innerText = "Node-Placeholder"
     newRow.appendChild(placeholder)
 
@@ -32,7 +32,7 @@ class Node {
     newRow.addEventListener("click", editNode)
 
     // Adding the html in so it can be 'seen' and clicked on.
-    let table = document.getElementById('nodeRows')
+    let table = Document.getElementById('nodeRows')
     table.appendChild(newRow)
 
     // so we can get the html easily later on
@@ -133,7 +133,7 @@ function createNode(nodeType) {
 function editNode(event) {
   // use form with whos action is to call one of the functions here with payload which will then update the node + html
   // console.log(this) // <- just so your aware of the variable
-  let x = document.getElementById("editForm")
+  let x = Document.getElementById("editForm")
   let identifier = "editForm"
 
   // remove all elements from the form
@@ -141,71 +141,71 @@ function editNode(event) {
 
   // Populate form with appropriate inputs
   // ID and TYPE should not be editable
-  let id = document.createElement("p")
+  let id = Document.createElement("p")
   id.setAttribute("id", identifier + "id")
   id.innerText = "ID: " + this.getAttribute("id")
   x.appendChild(id)
-  let type = document.createElement("p")
+  let type = Document.createElement("p")
   type.innerText = "TYPE: " + this.getAttribute("type")
   x.appendChild(type)
 
   // Value and edges should be editable
-  let valueLabel = document.createElement("label")
+  let valueLabel = Document.createElement("label")
   valueLabel.setAttribute("for", "value")
   valueLabel.innerText = "VALUE:"
   x.appendChild(valueLabel)
-  let value = document.createElement("input")
+  let value = Document.createElement("input")
   value.setAttribute("name", "value")
   value.setAttribute("id", identifier + "value")
   value.setAttribute("value", this.getAttribute("value"))
   x.appendChild(value)
   // this is just for looks
-  let br1 = document.createElement("br")
+  let br1 = Document.createElement("br")
   x.appendChild(br1)
 
   // Later on edges should not be edited this way.
-  let parentLabel = document.createElement("label")
+  let parentLabel = Document.createElement("label")
   parentLabel.setAttribute("for", "parent")
   parentLabel.innerText = "PARENT:"
   x.appendChild(parentLabel)
-  let parent = document.createElement("input")
+  let parent = Document.createElement("input")
   parent.setAttribute("name", "value")
   parent.setAttribute("id", identifier + "parent")
   parent.setAttribute("value", this.getAttribute("parent"))
   x.appendChild(parent)
   // this is just for looks
-  let br2 = document.createElement("br")
+  let br2 = Document.createElement("br")
   x.appendChild(br2)
 
   // Second for child nodes
-  let childrenLabel = document.createElement("label")
+  let childrenLabel = Document.createElement("label")
   childrenLabel.setAttribute("for", "children")
   childrenLabel.innerText = "CHILDREN:"
   x.appendChild(childrenLabel)
-  let children = document.createElement("input")
+  let children = Document.createElement("input")
   children.setAttribute("name", "value")
   children.setAttribute("id", identifier + "children")
   children.setAttribute("value", this.getAttribute("children"))
   x.appendChild(children)
   // this is just for looks
-  let br3 = document.createElement("br")
+  let br3 = Document.createElement("br")
   x.appendChild(br3)
 
   // This is not good user interface to put this button here - given the interfaces current rendering.
-  let deleteLabel = document.createElement("label")
+  let deleteLabel = Document.createElement("label")
   deleteLabel.setAttribute("for", "deleteThingy")
   deleteLabel.innerText = "DELETE?"
   x.appendChild(deleteLabel)
-  let deleteThingy = document.createElement("input")
+  let deleteThingy = Document.createElement("input")
   deleteThingy.setAttribute("type", "radio")
   deleteThingy.setAttribute("id", identifier + "deleteThingy")
   x.appendChild(deleteThingy)
   // this is just for looks
-  let br4 = document.createElement("br")
+  let br4 = Document.createElement("br")
   x.appendChild(br4)
 
   // finish with the submit button which will send the data to the (graph or node?)
-  let submit = document.createElement("input")
+  let submit = Document.createElement("input")
   submit.setAttribute("type", "button")
   submit.setAttribute("value", "submit")
   submit.addEventListener("click", getEditNodeFormVariables)
@@ -213,7 +213,7 @@ function editNode(event) {
 }
 
 function removeEditFormChildren() {
-  let x = document.getElementById("editForm")
+  let x = Document.getElementById("editForm")
   // remove all elements from the form
   while (x.firstChild) {
     x.removeChild(x.firstChild)
@@ -222,20 +222,20 @@ function removeEditFormChildren() {
 
 function getEditNodeFormVariables() {
   // get all of the variables from the html
-  let x = document.getElementById("editForm")
+  let x = Document.getElementById("editForm")
   let identifier = "editForm"
   let data = {}
 
   // which node?
-  let id = document.getElementById( identifier + "id")
+  let id = Document.getElementById( identifier + "id")
   data["id"] = Number(id.innerText.substr(4))
 
   // what value?
-  let value = document.getElementById(identifier + "value")
+  let value = Document.getElementById(identifier + "value")
   data["value"] = Number(value.value)
 
   // what edges?
-  let parent = document.getElementById(identifier + "parent")
+  let parent = Document.getElementById(identifier + "parent")
   data["parent"] = parent.value.split(",")
   if (data["parent"].length > 0) {
     if (data["parent"].length > 1) {
@@ -252,7 +252,7 @@ function getEditNodeFormVariables() {
     }
   }
 
-  let children = document.getElementById(identifier + "children")
+  let children = Document.getElementById(identifier + "children")
   data["children"] = children.value.split(",")
   if (data["children"].length > 0) {
     if (data["children"].length > 1) {
@@ -298,15 +298,15 @@ function calculateGraph() {
 }
 
 function saveToJSON() {
-  let saveFormTextArea = document.getElementById("saveFormTextArea")
+  let saveFormTextArea = Document.getElementById("saveFormTextArea")
   let savedNodes = JSON.stringify(SCENE_Graph.nodes)
   saveFormTextArea.value = savedNodes
 }
 
-window.onload = function(){
+Document.onload = function(){
   SCENE_Graph = new Graph();
   // checking if we need to parse/load some JSON
-  let LoadElement = document.getElementById("saveFormTextArea")
+  let LoadElement = Document.getElementById("saveFormTextArea")
   let LoadValue = LoadElement.value
   if (LoadValue.length > 2) {
     objects = JSON.parse(LoadValue)

@@ -1,0 +1,25 @@
+<template id="editor" class="task-template">
+  <table id="nodesTable">
+    <tbody id="nodeRows">
+      <tr>
+        <th>Nodes</th>
+      </tr>
+    </tbody>
+  </table>
+  <h1>Options</h1>
+  <a href="">home</a>
+  <form id="editForm">
+  </form>
+  <h1>Calculate</h1>
+  <button type="button" id="print-graph">print graph to console</button>
+  <button type="button" id="calculate-graph">calcute all values</button>
+  <h1>Create</h1>
+  <button type="button" id="create-node-add">Add</button>
+  <button type="button" id="create-node-variable">Variable</button>
+  <h1>Save</h1>
+  <p>This button should open up the file system and save as a JSON file (WIP)</p>
+  <button type="button" id="save-to-JSON">save current graph</button>
+  <script>
+    require("./renderer-process/editor");
+  </script>
+</template>
