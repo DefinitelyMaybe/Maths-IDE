@@ -2,6 +2,7 @@ const electron = require('electron')
 const path = require('path')
 const url = require('url')
 const os = require('os')
+const fs = require('fs')
 
 const app = electron.app
 const Menu = electron.Menu
@@ -19,7 +20,6 @@ const template = [
     label: 'Options',
     submenu: [
       {
-        role: 'open',
         label:'open',
         click: function(item, focusedWindow){
           const options = {
@@ -30,14 +30,28 @@ const template = [
           }
           dialog.showOpenDialog(options, function(filenames) {
             if (filenames) {
-              console.log(filenames);
+              // not dealing with opening lots of files at this point
+              let fn = filenames[0]
+              fs.readFile(fn, "utf8", function(err, data){
+                if (err) {
+                  console.log(err);
+                }
+                console.log(data);
+              })
             }
           })
         }
       },
       {
-        role: 'save',
         label:'save',
+        click: function(item, focusedWindow) {
+          console.log("WIP");
+          // Just save to the same file we already have open
+          // If empty then with no previously opened file then just call 'save as'
+        }
+      },
+      {
+        label:'save as',
         click: function(item, focusedWindow) {
           const options = {
             title: 'Save to JSON',
@@ -46,7 +60,14 @@ const template = [
             ]
           }
           dialog.showSaveDialog(options, function (filename) {
-            console.log(filename);
+            data = "{\"Hello\":\"world\"}"
+            fs.writeFile(filename, data, function (err) {
+              if (err) {
+                console.log(err);
+              } else {
+                console.log("Something may have been saved.");
+              }
+            })
           })
         }
       },
