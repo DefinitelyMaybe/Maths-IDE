@@ -1,18 +1,87 @@
 const electron = require('electron')
-// Module to control application life.
-const app = electron.app
-// Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow
-
 const path = require('path')
 const url = require('url')
+const os = require('os')
+
+const app = electron.app
+const Menu = electron.Menu
+const BrowserWindow = electron.BrowserWindow
+const ipc = electron.ipcMain
+const dialog = electron.dialog
 
 //require('electron-reload')(__dirname);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
-
+const template = [
+  {
+    label: 'Options',
+    submenu: [
+      {
+        role: 'open',
+        label:'open',
+        click: function(item, focusedWindow){
+          const options = {
+            title: 'Open JSON Graph',
+            filters: [
+              {name: 'Graph', extensions: ['json']}
+            ]
+          }
+          dialog.showOpenDialog(options, function(filenames) {
+            if (filenames) {
+              console.log(filenames);
+            }
+          })
+        }
+      },
+      {
+        role: 'save',
+        label:'save',
+        click: function(item, focusedWindow) {
+          const options = {
+            title: 'Save to JSON',
+            filters: [
+              {name: 'Graph', extensions: ['json']}
+            ]
+          }
+          dialog.showSaveDialog(options, function (filename) {
+            console.log(filename);
+          })
+        }
+      },
+      {type: 'separator'},
+      {
+        role: 'exit',
+        label:'exit',
+        click: function () {
+          app.quit()
+        }
+      },
+    ]
+  },
+  {
+    label: 'Calculate',
+    submenu: [
+      {role: 'print-graph', label:'print graph'},
+      {role: 'all-values', label:'values'},
+    ]
+  },
+  {
+    label: 'View',
+    submenu: [
+      {role: 'reload'},
+      {role: 'forcereload'},
+      {role: 'toggledevtools'},
+      {type: 'separator'},
+      {role: 'resetzoom'},
+      {role: 'zoomin'},
+      {role: 'zoomout'},
+      {type: 'separator'},
+      {role: 'togglefullscreen'}
+    ]
+  },
+]
 
 // Classes
 
@@ -42,6 +111,9 @@ function createWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
 }
 
 // App life cycle
@@ -68,11 +140,12 @@ app.on('activate', function () {
   }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+// In this file you can include the rest of your app's specific main process code. You can also put them in separate files and require them here.
 
-// Exported Functions
-// things like file i/o, native calls, db calls, window management
-exports.getCellSize = function(){
-  return "There is no spoon.";
-}
+ipc.on('open-file-dialog', function (event) {
+  dialog.showOpenDialog({
+    properties: ['openFile', 'openDirectory']
+  }, function (files) {
+    if (files) event.sender.send('selected-directory', files)
+  })
+})

@@ -5,24 +5,20 @@
 
     <link rel="stylesheet" href="assets/css/editor.css">
 
-    <link rel="import" href="sections/editor.html">
   </head>
   <body>
-    <!-- Can keep navigation simple for the moment using the menu at the top -->
-    <!--nav class="nav js-nav">
-      <h1>Some Heading</h1>
-      <div>
-      <h5>
-      <button>
-    </nav-->
-    <main class="content js-content">
-      <!-- empty containter -->
-      <!-- Will still keep most content in here -->
-    </main>
+    <table id="nodesTable">
+      <tbody id="nodeRows">
+        <tr>
+          <th>Nodes</th>
+        </tr>
+      </tbody>
+    </table>
+    <h1>Create</h1>
+    <button type="button" id="create-node-add">Add</button>
+    <button type="button" id="create-node-variable">Variable</button>
     <script>
-      require('./assets/nav');
-      require('./assets/imports');
-      // bunch of other require("....") statements come back later if needed
+      require("./editor");
     </script>
   </body>
 </html>

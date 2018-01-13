@@ -1,5 +1,5 @@
 let SCENE_Graph
-console.log("hello ");
+
 class Node {
   constructor(nodeType, nodeValue) {
     if (!nodeValue) {
@@ -326,4 +326,6 @@ Document.onload = function(){
 
   // Once things are loaded, we remove them from the display
   LoadElement.innerText = ""
+
+  console.log("hellosz");
 }
