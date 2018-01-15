@@ -15,70 +15,32 @@ const dialog = electron.dialog
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+let mainGraph
+
 const template = [
   {
     label: 'Options',
     submenu: [
       {
         label:'open',
-        click: function(item, focusedWindow){
-          const options = {
-            title: 'Open JSON Graph',
-            filters: [
-              {name: 'Graph', extensions: ['json']}
-            ]
-          }
-          dialog.showOpenDialog(options, function(filenames) {
-            if (filenames) {
-              // not dealing with opening lots of files at this point
-              let fn = filenames[0]
-              fs.readFile(fn, "utf8", function(err, data){
-                if (err) {
-                  console.log(err);
-                }
-                console.log(data);
-              })
-            }
-          })
-        }
+        click: openFile,
       },
       {
         label:'save',
-        click: function(item, focusedWindow) {
-          console.log("WIP");
-          // Just save to the same file we already have open
-          // If empty then with no previously opened file then just call 'save as'
-        }
+        click: saveFile,
       },
       {
         label:'save as',
-        click: function(item, focusedWindow) {
-          const options = {
-            title: 'Save to JSON',
-            filters: [
-              {name: 'Graph', extensions: ['json']}
-            ]
-          }
-          dialog.showSaveDialog(options, function (filename) {
-            data = "{\"Hello\":\"world\"}"
-            fs.writeFile(filename, data, function (err) {
-              if (err) {
-                console.log(err);
-              } else {
-                console.log("Something may have been saved.");
-              }
-            })
-          })
-        }
+        click: saveFileAs,
       },
       {type: 'separator'},
       {
-        role: 'exit',
         label:'exit',
         click: function () {
+          // TODO: Later on could check if current work is saved before quit.
           app.quit()
-        }
-      },
+        },
+      }
     ]
   },
   {
@@ -105,6 +67,130 @@ const template = [
 ]
 
 // Classes
+class Node {
+  constructor(nodeType, nodeValue) {
+    if (!nodeValue) {
+      nodeValue = ""
+    }
+    this.id = mainGraph.getID()
+    this.type = nodeType
+    this.value = nodeValue
+    this.parent = []
+    this.children = []
+    this.html = this.createNodeHtml()
+  }
+
+  createNodeHtml(){
+    let newRow = Document.createElement("tr")
+
+    // placeholder for the html table
+    let placeholder = Document.createElement("td")
+    placeholder.innerText = "Node-Placeholder"
+    newRow.appendChild(placeholder)
+
+    // Attributes that we'll use dynamically
+    newRow.setAttribute("id", this.id)
+    newRow.setAttribute("type", this.type)
+    newRow.setAttribute("value", this.value)
+    newRow.setAttribute("parent", this.parent)
+    newRow.setAttribute("children", this.children)
+
+    // binding event to edit the node
+    newRow.addEventListener("click", editNode)
+
+    // Adding the html in so it can be 'seen' and clicked on.
+    let table = Document.getElementById('nodeRows')
+    table.appendChild(newRow)
+
+    // so we can get the html easily later on
+    return newRow
+  }
+
+  updateNodeHtml(){
+    this.html.setAttribute("value", this.value)
+    this.html.setAttribute("parent", this.parent)
+    this.html.setAttribute("children", this.children)
+  }
+
+  evaluateValue(){
+    if (this.type == "variable") {
+      return this.value
+    } else if (this.type == "add") {
+      if (this.children.length != 2) {
+        return undefined
+      } else {
+        let x = mainGraph.getNode(this.children[0]).evaluateValue()
+        let y = mainGraph.getNode(this.children[1]).evaluateValue()
+        console.log("node " + this.id + ":", x+y);
+        return x + y
+      }
+    }
+  }
+}
+
+class Graph {
+  constructor() {
+    this.nextID = 0
+    this.unusedIDS = []
+    this.nodes = []
+  }
+
+  getID(){
+    if (this.unusedIDS.length == 0) {
+      this.nextID += 1
+      return this.nextID - 1
+    } else {
+      return this.unusedIDS.pop()
+    }
+  }
+
+  getNode(nodeID){
+    for (var i = 0; i < this.nodes.length; i++) {
+      if (this.nodes[i].id == nodeID) {
+        return this.nodes[i];
+      }
+    }
+  }
+
+  addNode(newNode){
+    this.nodes.push(newNode)
+  }
+
+  editNode(nodeID, newValues){
+    let x = getNode(nodeID)
+
+  }
+
+  removeNode(nodeID){
+    // removing the html?
+    // removing from graph
+    let x
+    for (var i = 0; i < this.nodes.length; i++) {
+      if (this.nodes[i].data.id == nodeID) {
+        x = i;
+        this.unusedIDS.push(this.nodes[i].data.id)
+      }
+    }
+    let lastHalf = this.nodes.slice(x)
+    let firstHalf = this.nodes.slice(0, x)
+    console.log("check this at least once");
+    console.log(this.nodes);
+    this.nodes = firstHalf.concat(lastHalf)
+    console.log(this.nodes);
+    console.log("The arrays above should differ by only one element");
+  }
+
+  findRoots(){
+    let roots = []
+    for (var i = 0; i < this.nodes.length; i++) {
+      let node = this.nodes[i]
+      if (node.parent.length == 0) {
+        roots.push(node)
+      }
+    }
+    return roots
+  }
+}
 
 // Functions
 function createWindow () {
@@ -137,14 +223,58 @@ function createWindow () {
   Menu.setApplicationMenu(menu)
 }
 
+function openFile() {
+  const options = {
+    title: 'Open JSON',
+    filters: [
+      {name: 'Graph', extensions: ['json']}
+    ]
+  }
+  dialog.showOpenDialog(options, function(filenames) {
+    if (filenames) {
+      // not dealing with opening lots of files at this point
+      let fn = filenames[0]
+      fs.readFile(fn, "utf8", function(err, data){
+        if (err) {
+          console.log(err);
+        }
+        // TODO: send the JSON to the renderer
+        console.log(data);
+      })
+    }
+  })
+}
+
+function saveFile(filename, data) {
+  fs.writeFile(filename, data, function (err) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Something may have been saved.");
+    }
+  })
+}
+
+function saveFileAs() {
+  const options = {
+    title: 'Save json as...',
+    filters: [
+      {name: 'GraphThingy', extensions: ['json']}
+    ]
+  }
+  dialog.showSaveDialog(options, function (filename) {
+    // Using synchronous message for the returnValue instead of making more functions
+    let data = JSON.stringify(mainGraph.nodes)
+    saveFile(filename, data)
+  })
+}
+
 // App life cycle
+app.on('ready', function () {
+  createWindow()
+  mainGraph = new Graph()
+})
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
-
-// Quit when all windows are closed.
 app.on('window-all-closed', function () {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
@@ -161,8 +291,6 @@ app.on('activate', function () {
   }
 })
 
-// In this file you can include the rest of your app's specific main process code. You can also put them in separate files and require them here.
-
 ipc.on('open-file-dialog', function (event) {
   dialog.showOpenDialog({
     properties: ['openFile', 'openDirectory']
@@ -170,3 +298,8 @@ ipc.on('open-file-dialog', function (event) {
     if (files) event.sender.send('selected-directory', files)
   })
 })
+
+ipc.on('asynchronous-message', function (event, arg) {
+  event.sender.send('asynchronous-reply', 'pong')
+})
+// "save-data-message"
