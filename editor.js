@@ -1,8 +1,72 @@
-// https://electronjs.org/docs/tutorial/quick-start#renderer-process
+const {remote} = require('electron')
 
-// Could start by calling for the data to be rendered here or waiting for the window to load?
+const {Menu, MenuItem} = remote
+const ipc = remote.ipcRenderer
+
+let contextmenutemplate = [{
+    label: 'Options',
+    visible: false,
+    submenu: [{
+        label: 'delete',
+        click: test,
+      },
+      {
+        label: 'edit',
+        click: test,
+      }
+    ]
+  },
+  {
+    label: 'Create',
+    visible: false,
+    submenu: [{
+        label: 'variable',
+        click: test
+      },
+      {
+        label: 'add',
+        click: test
+      },
+    ]
+  }
+]
+let contextmenu
+contextmenu = new Menu()
+contextmenu.append(new MenuItem(contextmenutemplate[0]))
+contextmenu.append(new MenuItem(contextmenutemplate[1]))
+
+window.addEventListener('contextmenu', (e) => {
+  e.preventDefault()
+  defaultContext()
+  contextmenu.popup(remote.getCurrentWindow())
+}, false)
 
 // functions
+function test() {
+  console.log("nothing");
+}
+
+function defaultContext() {
+  for (var i = 0; i < contextmenu.items.length; i++) {
+    if (contextmenu.items[i].label == "Create") {
+      contextmenu.items[i].visible = true
+    } else {
+      contextmenu.items[i].visible = false
+    }
+  }
+}
+
+function additionalContext(args) {
+  // args must be an obj with string values i.e. {}
+  if (args) {
+    for (var i = 0; i < contextmenu.items.length; i++) {
+      contextmenu.items[i].visible = true
+    }
+  } else {
+    defaultContext()
+  }
+}
+
 function createNode(nodeType) {
   let newNode = new Node(nodeType)
   SCENE_Graph.addNode(newNode)
@@ -105,7 +169,7 @@ function getEditNodeFormVariables() {
   let data = {}
 
   // which node?
-  let id = Document.getElementById( identifier + "id")
+  let id = Document.getElementById(identifier + "id")
   data["id"] = Number(id.innerText.substr(4))
 
   // what value?
@@ -174,8 +238,3 @@ function calculateGraph() {
     }
   }
 }
-
-window.addEventListener('load', function () {
-  // window has loaded
-
-})

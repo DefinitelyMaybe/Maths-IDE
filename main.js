@@ -1,25 +1,94 @@
-const electron = require('electron')
+const electron = require('electron');
 const path = require('path')
 const url = require('url')
 const os = require('os')
-
-const lib = require('./scripts/lib');
+const dataInterface = require('./scripts/interface');
+const fs = require('fs');
 
 const app = electron.app
 const Menu = electron.Menu
 const BrowserWindow = electron.BrowserWindow
+const dialog = electron.dialog
 
 //require('electron-reload')(__dirname);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
-let mainGraph
+let template = [{
+    label: 'Options',
+    submenu: [{
+        label: 'open',
+        click: openFile,
+      },
+      {
+        label: 'save',
+        click: saveFile,
+      },
+      {
+        label: 'save as',
+        click: saveFileAs,
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'exit',
+        click: function() {
+          // TODO: Later on could check if current work is saved before quit.
+          app.quit()
+        },
+      }
+    ]
+  },
+  {
+    label: 'Calculate',
+    submenu: [{
+        role: 'print-graph',
+        label: 'print graph'
+      },
+      {
+        role: 'all-values',
+        label: 'values'
+      },
+    ]
+  },
+  {
+    label: 'View',
+    submenu: [{
+        role: 'reload'
+      },
+      {
+        role: 'forcereload'
+      },
+      {
+        role: 'toggledevtools'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'resetzoom'
+      },
+      {
+        role: 'zoomin'
+      },
+      {
+        role: 'zoomout'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'togglefullscreen'
+      }
+    ]
+  },
+]
+let dataInt = new dataInterface()
 
 // Functions
 function createWindow () {
-  // Create the browser window.
-  // TODO: frame: false
   mainWindow = new BrowserWindow({width: 800, height: 600, show:false, frame:true})
 
   // and load the index.html of the app.
@@ -43,14 +112,66 @@ function createWindow () {
     mainWindow = null
   })
 
-  const menu = Menu.buildFromTemplate(lib.menuTemplate)
+  const menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
+}
+
+function openFile() {
+  const options = {
+    title: 'Open JSON',
+    filters: [{
+      name: 'Graph',
+      extensions: ['json']
+    }]
+  }
+  dialog.showOpenDialog(options, function(filenames) {
+    if (filenames) {
+      // not dealing with opening lots of files at this point
+      let fn = filenames[0]
+      fs.readFile(fn, "utf8", function(err, data) {
+        if (err) {
+          console.warn(err);
+        }
+        dataInt.loadGraph(JSON.parse(data))
+      })
+    }
+  })
+}
+
+function saveFile(filename, data) {
+  if (!(typeof filename == "string")) {
+    saveFileAs()
+  } else {
+    fs.writeFile(filename, data, function(err) {
+      if (err) {
+        console.warn(err);
+      } else {
+        console.info("The following was just saved to ${filename}:\n${data}")
+      }
+    })
+  }
+}
+
+function saveFileAs() {
+  const options = {
+    title: 'Save json as...',
+    filters: [{
+      name: 'Graph',
+      extensions: ['json']
+    }]
+  }
+  dialog.showSaveDialog(options, function(filename) {
+    // Using synchronous message for the returnValue instead of making more functions
+    if (filename) {
+      let data = JSON.stringify(dataInt.graph.nodes)
+      saveFile(filename, data)
+    }
+  })
 }
 
 // App life cycle
 app.on('ready', function () {
   createWindow()
-  mainGraph = new lib.graph()
 })
 
 app.on('window-all-closed', function () {
