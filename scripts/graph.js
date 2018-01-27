@@ -1,4 +1,4 @@
-class Node {
+class myNode {
   constructor(nodeID, nodeType) {
     this.id = nodeID
     this.type = nodeType
@@ -58,7 +58,7 @@ class Node {
   }
 }
 
-class Graph {
+class myGraph {
   constructor() {
     this.nextID = 0
     this.unusedIDS = []
@@ -118,4 +118,4 @@ class Graph {
   }
 }
 
-module.exports = Graph
+module.exports = {myGraph, myNode}
