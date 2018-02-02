@@ -10,8 +10,5 @@
   "author": "DefinitelyMaybe",
   "license": "",
   "bugs": "https://github.com/DefinitelyMaybe/Origin/issues",
-  "homepage": "https://github.com/DefinitelyMaybe/Origin#readme",
-  "devDependencies": {
-    "electron-reload": "^1.1.0"
-  }
+  "homepage": "https://github.com/DefinitelyMaybe/Origin#readme"
 }

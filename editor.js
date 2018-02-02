@@ -1,22 +1,38 @@
-const {remote} = require('electron')
-const {graph, node} = require('./graph');
+const {
+  remote
+} = require('electron')
+const ipc = require('electron').ipcRenderer
 
-const {Menu, MenuItem} = remote
-const ipc = remote.ipcRenderer
+const {
+  Menu,
+  MenuItem
+} = remote
 
+let help = true
 let mouse = {
-  x:0,
-  y:0
+  x: 0,
+  y: 0
 }
 let contextmenutemplate = [{
-    label: 'Options',
+    label: 'File',
     submenu: [{
-        label: 'delete',
+        label: 'new',
         click: context,
       },
       {
-        label: 'edit',
+        label: 'open',
         click: context,
+      },
+      {
+        label: 'save as',
+        click: context,
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'exit',
+        click: context
       }
     ]
   },
@@ -31,31 +47,56 @@ let contextmenutemplate = [{
         click: context
       },
     ]
+  },
+  {
+    label: 'Helpers',
+    submenu: [{
+      label: 'printGraph',
+      click: context
+    }]
   }
 ]
 let contextmenu
+
 contextmenu = new Menu()
-contextmenu.append(new MenuItem(contextmenutemplate[0]))
-contextmenu.append(new MenuItem(contextmenutemplate[1]))
+let optionsContext = new MenuItem(contextmenutemplate[0])
+let createContext = new MenuItem(contextmenutemplate[1])
+let helpersContext = new MenuItem(contextmenutemplate[2])
+contextmenu.append(optionsContext)
+contextmenu.append(createContext)
+contextmenu.append(helpersContext)
 
 window.addEventListener('contextmenu', (e) => {
   e.preventDefault()
   updateMouse(e)
-  defaultContext()
+  contextChange("window")
   contextmenu.popup(remote.getCurrentWindow())
 }, false)
 
 // functions
 function context(menuItem, browserWindow, e) {
   if (menuItem.label == "variable") {
-    console.log("Lets create a variable");
-    // send a message back into main to create this node
-    // main creates the things
-    // receive a message to update html or update html from main?
+    ipc.send("create", {
+      x: mouse.x,
+      y: mouse.y,
+      type: "variable"
+    })
   } else if (menuItem.label == "add") {
-    console.log("Lets add things together");
+    ipc.send("create", {
+      x: mouse.x,
+      y: mouse.y,
+      type: "add"
+    })
+  } else if (menuItem.label == "printGraph") {
+    ipc.send("help", "print-graph")
+  } else if (menuItem.label == "exit") {
+    ipc.send("file", "quit")
+  } else if (menuItem.label == "open") {
+    ipc.send("file", "open")
+  } else if (menuItem.label == "save as") {
+    ipc.send("file", "save as")
   } else {
-    console.log("The ${menuItem.label} hasn't been caught.");
+    console.log(`The '${menuItem.label}' menu item hasn't been caught.`);
   }
 }
 
@@ -64,23 +105,15 @@ function updateMouse(e) {
   mouse.y = e.y
 }
 
-function defaultContext() {
-  for (var i = 0; i < contextmenu.items.length; i++) {
-    if (contextmenu.items[i].label == "Create") {
-      contextmenu.items[i].visible = true
-    } else {
-      contextmenu.items[i].visible = false
-    }
-  }
-}
-
-function additionalContext(args) {
+function contextChange(arg) {
   // args must be an obj with string values i.e. {}
-  if (args) {
+  if (arg == "window") {
     for (var i = 0; i < contextmenu.items.length; i++) {
       contextmenu.items[i].visible = true
     }
   } else {
-    defaultContext()
+    for (var i = 0; i < contextmenu.items.length; i++) {
+      contextmenu.items[i].visible = false
+    }
   }
 }
