@@ -66,29 +66,38 @@ class Scene {
   }
 
   findNode(id){
-    let items = Document.body.getElementsByTagName("details")
+    let items = document.getElementsByTagName("details")
     for (var i = 0; i < items.length; i++) {
       if (items[i].getAttribute("id") == id) {
         return items[i];
       }
     }
-    return node
+    return false
   }
 
   createNodeHtml(args) {
     // the 'detail' html element's default behaviour is useful for it's open and closed states
-    let nodeDetails = Document.createElement("details")
-    let nodeSummary = Document.createElement("summary")
+    let nodeDetails = document.createElement("details")
+    let nodeSummary = document.createElement("summary")
     nodeSummary.innerText = "Placeholder"
     nodeDetails.appendChild(nodeSummary)
+    nodeDetails.style.left = `${args.x}px`
+    nodeDetails.style.top = `${args.y}px`
 
     // The form for changing node
-    let nodeForm = Document.createElement("form")
-    let formValueLabel = Document.createElement("label")
-    formValueInput.setAttribute("id", "value")
-    formValueInput.innerText = ""
-    let formValueInput = Document.createElement("input")
+    let nodeForm = document.createElement("form")
+    let formValueLabel = document.createElement("label")
+    let formValueInput = document.createElement("input")
+    let formbreakline1 = document.createElement("br")
+    let formSubmit = document.createElement("button")
     formValueLabel.innerText = "Value"
+    formValueInput.setAttribute("id", `${args.id}-form-value`)
+    formSubmit.innerText = "submit"
+    nodeForm.appendChild(formValueLabel)
+    nodeForm.appendChild(formValueInput)
+    nodeForm.appendChild(formbreakline1)
+    nodeForm.appendChild(formSubmit)
+    nodeDetails.appendChild(nodeForm)
 
     // Attributes that we'll use dynamically
     nodeDetails.setAttribute("id", args.id)
@@ -97,19 +106,18 @@ class Scene {
     nodeDetails.setAttribute("parent", args.parent)
     nodeDetails.setAttribute("children", args.children)
 
-    // what needs to happen on each toggle?
     nodeDetails.addEventListener("toggle", function(event) {
       if (nodeDetails.open) {
         // The node has been opened, editing may occur
-        console.log("node opened.");
       } else {
         // just the summary of the node will be seen
-        console.log("node closed.");
+        let updateArgs = {id:args.id}
+        ipc.send("update", updateArgs)
       }
     })
 
     // finally adding it to the html
-    Document.body.appendChild(nodeDetails)
+    document.body.appendChild(nodeDetails)
   }
 
   updateNodeHtml(node) {
@@ -121,7 +129,7 @@ class Scene {
   editNode() {
     // use form with whos action is to call one of the functions here with payload which will then update the node + html
     // console.log(this) // <- just so your aware of the variable
-    let x = Document.getElementById("editForm")
+    let x = document.getElementById("editForm")
     let identifier = "editForm"
 
     // remove all elements from the form
@@ -129,71 +137,71 @@ class Scene {
 
     // Populate form with appropriate inputs
     // ID and TYPE should not be editable
-    let id = Document.createElement("p")
+    let id = document.createElement("p")
     id.setAttribute("id", identifier + "id")
     id.innerText = "ID: " + this.getAttribute("id")
     x.appendChild(id)
-    let type = Document.createElement("p")
+    let type = document.createElement("p")
     type.innerText = "TYPE: " + this.getAttribute("type")
     x.appendChild(type)
 
     // Value and edges should be editable
-    let valueLabel = Document.createElement("label")
+    let valueLabel = document.createElement("label")
     valueLabel.setAttribute("for", "value")
     valueLabel.innerText = "VALUE:"
     x.appendChild(valueLabel)
-    let value = Document.createElement("input")
+    let value = document.createElement("input")
     value.setAttribute("name", "value")
     value.setAttribute("id", identifier + "value")
     value.setAttribute("value", this.getAttribute("value"))
     x.appendChild(value)
     // this is just for looks
-    let br1 = Document.createElement("br")
+    let br1 = document.createElement("br")
     x.appendChild(br1)
 
     // Later on edges should not be edited this way.
-    let parentLabel = Document.createElement("label")
+    let parentLabel = document.createElement("label")
     parentLabel.setAttribute("for", "parent")
     parentLabel.innerText = "PARENT:"
     x.appendChild(parentLabel)
-    let parent = Document.createElement("input")
+    let parent = document.createElement("input")
     parent.setAttribute("name", "value")
     parent.setAttribute("id", identifier + "parent")
     parent.setAttribute("value", this.getAttribute("parent"))
     x.appendChild(parent)
     // this is just for looks
-    let br2 = Document.createElement("br")
+    let br2 = document.createElement("br")
     x.appendChild(br2)
 
     // Second for child nodes
-    let childrenLabel = Document.createElement("label")
+    let childrenLabel = document.createElement("label")
     childrenLabel.setAttribute("for", "children")
     childrenLabel.innerText = "CHILDREN:"
     x.appendChild(childrenLabel)
-    let children = Document.createElement("input")
+    let children = document.createElement("input")
     children.setAttribute("name", "value")
     children.setAttribute("id", identifier + "children")
     children.setAttribute("value", this.getAttribute("children"))
     x.appendChild(children)
     // this is just for looks
-    let br3 = Document.createElement("br")
+    let br3 = document.createElement("br")
     x.appendChild(br3)
 
     // This is not good user interface to put this button here - given the interfaces current rendering.
-    let deleteLabel = Document.createElement("label")
+    let deleteLabel = document.createElement("label")
     deleteLabel.setAttribute("for", "deleteThingy")
     deleteLabel.innerText = "DELETE?"
     x.appendChild(deleteLabel)
-    let deleteThingy = Document.createElement("input")
+    let deleteThingy = document.createElement("input")
     deleteThingy.setAttribute("type", "radio")
     deleteThingy.setAttribute("id", identifier + "deleteThingy")
     x.appendChild(deleteThingy)
     // this is just for looks
-    let br4 = Document.createElement("br")
+    let br4 = document.createElement("br")
     x.appendChild(br4)
 
     // finish with the submit button which will send the data to the (Graph or node?)
-    let submit = Document.createElement("input")
+    let submit = document.createElement("input")
     submit.setAttribute("type", "button")
     submit.setAttribute("value", "submit")
     submit.addEventListener("click", getEditNodeFormVariables)
@@ -201,7 +209,7 @@ class Scene {
   }
 
   removeEditFormChildren() {
-    let x = Document.getElementById("editForm")
+    let x = document.getElementById("editForm")
     // remove all elements from the form
     while (x.firstChild) {
       x.removeChild(x.firstChild)
@@ -210,20 +218,20 @@ class Scene {
 
   getEditNodeFormVariables() {
     // get all of the variables from the html
-    let x = Document.getElementById("editForm")
+    let x = document.getElementById("editForm")
     let identifier = "editForm"
     let data = {}
 
     // which node?
-    let id = Document.getElementById(identifier + "id")
+    let id = document.getElementById(identifier + "id")
     data["id"] = Number(id.innerText.substr(4))
 
     // what value?
-    let value = Document.getElementById(identifier + "value")
+    let value = document.getElementById(identifier + "value")
     data["value"] = Number(value.value)
 
     // what edges?
-    let parent = Document.getElementById(identifier + "parent")
+    let parent = document.getElementById(identifier + "parent")
     data["parent"] = parent.value.split(",")
     if (data["parent"].length > 0) {
       if (data["parent"].length > 1) {
@@ -240,7 +248,7 @@ class Scene {
       }
     }
 
-    let children = Document.getElementById(identifier + "children")
+    let children = document.getElementById(identifier + "children")
     data["children"] = children.value.split(",")
     if (data["children"].length > 0) {
       if (data["children"].length > 1) {
@@ -313,18 +321,6 @@ function contextChange(arg) {
   }
 }
 
-function update(event, args) {
-  let found = mainScene.findNode(args.id)
-  if (found) {
-    // update the nodes html as per usual
-    console.log(`found was true\nthis was there${found}`);
-  } else {
-    // a node has just been created
-    console.log(`found was false and a node should've been created.`);
-    mainScene.createNodeHtml(args)
-  }
-}
-
 // Events
 window.addEventListener('contextmenu', (e) => {
   e.preventDefault()
@@ -333,7 +329,16 @@ window.addEventListener('contextmenu', (e) => {
   contextmenu.popup(remote.getCurrentWindow())
 }, false)
 
-ipc.on("update", update)
+ipc.on("update", function (event, args) {
+  let found = mainScene.findNode(args.id)
+  if (found) {
+    // update the nodes html as per usual
+    console.log(`found was true\nthis was there${found}`);
+  } else {
+    // a node has just been created
+    mainScene.createNodeHtml(args)
+  }
+})
 
 ipc.on("help", function(event, args) {
   console.log(args);

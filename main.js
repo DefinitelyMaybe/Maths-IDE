@@ -226,25 +226,6 @@ function saveFileAs() {
   })
 }
 
-function createNode(event, args){
-  if (args.type) {
-    if (!args.id) {
-      args.id = mainGraph.getID()
-    }
-    if (!args.x) {
-      args.x = 0
-    }
-    if (!args.y) {
-      args.y = 0
-    }
-    let node = new Node(args)
-    mainGraph.nodes.push(node)
-    event.sender.send("update", args)
-  } else {
-    console.log(`Nothing was created.\nThis needed a type:\n ${args}\n`);
-  }
-}
-
 // Events
 app.on('ready', function() {
   createWindow()
@@ -266,7 +247,22 @@ app.on('activate', function() {
   }
 })
 
-ipc.on("create", createNode)
+ipc.on("create", function(event, args) {
+  if (args.type) {
+    if (!args.id) {
+      args.id = mainGraph.getID()
+    }
+    if (!args.x) {
+      args.x = 0
+    }
+    if (!args.y) {
+      args.y = 0
+    }
+    let node = new Node(args)
+    mainGraph.nodes.push(node)
+    event.sender.send("update", args)
+  }
+})
 
 ipc.on("help", function(event, args) {
   console.log(args);

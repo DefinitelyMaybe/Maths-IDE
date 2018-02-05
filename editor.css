@@ -25,3 +25,7 @@ h1 {
 a {
   color: grey;
 }
+
+details {
+  position: absolute;
+}
