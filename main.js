@@ -78,7 +78,7 @@ class Node {
 
 class Graph {
   constructor() {
-    this.nextID = 0
+    this.nextID = 1
     this.unusedIDS = []
     this.nodes = []
   }
@@ -261,6 +261,35 @@ ipc.on("create", function(event, args) {
     let node = new Node(args)
     mainGraph.nodes.push(node)
     event.sender.send("update", args)
+  }
+})
+
+ipc.on("update", function(event, args) {
+  // It turns out that 0 is false
+  if (args.id) {
+    // later I may need to add a check here that the node was found.
+    let node = mainGraph.getNode(args.id)
+    if (args.value) {
+      node.value = args.value
+    }
+    if (args.children) {
+      node.children = args.children
+    }
+    if (args.parent) {
+      node.parent = args.parent
+    }
+    if (args.x) {
+      node.x = args.x
+    }
+    if (args.y) {
+      node.y = args.y
+    }
+    event.sender.send("update", args)
+  } else {
+    console.log(`tired to update but there was no id.`);
+    for (var key in args) {
+      console.log(`${key} - ${args[key]}`);
+    }
   }
 })
 

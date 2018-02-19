@@ -62,7 +62,8 @@ let mainScene
 // classes
 class Scene {
   constructor() {
-    this.nothing = null
+    this.dragging = ""
+    this.candrop = false
   }
 
   findNode(id){
@@ -76,11 +77,38 @@ class Scene {
   }
 
   createNodeHtml(args) {
+    // TODO: Peicing things together and creating cohension between elements/nodes
+    // i.e. like logos clipping into one another
+    // or just plain text (what about mark up?)
     // the 'detail' html element's default behaviour is useful for it's open and closed states
     let nodeDetails = document.createElement("details")
     let nodeSummary = document.createElement("summary")
-    nodeSummary.innerText = "Placeholder"
+    switch (args.type) {
+      case "add":
+        nodeSummary.innerText = "+"
+        break;
+      case "constant":
+        nodeSummary.innerText = "1"
+        break;
+      case "variable":
+        nodeSummary.innerText = "x"
+        break;
+      case "matrix":
+        nodeSummary.innerText = "[]"
+        break;
+      default:
+        nodeSummary.innerText = "Placeholder"
+    }
     nodeDetails.appendChild(nodeSummary)
+    nodeDetails.setAttribute("draggable", "true")
+    nodeDetails.setAttribute("class", "node")
+
+    // Attributes that we'll use dynamically
+    nodeDetails.setAttribute("id", args.id)
+    nodeDetails.setAttribute("type", args.type)
+    nodeDetails.setAttribute("value", args.value)
+    nodeDetails.setAttribute("parent", args.parent)
+    nodeDetails.setAttribute("children", args.children)
     nodeDetails.style.left = `${args.x}px`
     nodeDetails.style.top = `${args.y}px`
 
@@ -91,20 +119,14 @@ class Scene {
     let formbreakline1 = document.createElement("br")
     let formSubmit = document.createElement("button")
     formValueLabel.innerText = "Value"
-    formValueInput.setAttribute("id", `${args.id}-form-value`)
     formSubmit.innerText = "submit"
+    nodeForm.method = "GET"
+    nodeForm.action = "test1"
     nodeForm.appendChild(formValueLabel)
     nodeForm.appendChild(formValueInput)
     nodeForm.appendChild(formbreakline1)
     nodeForm.appendChild(formSubmit)
     nodeDetails.appendChild(nodeForm)
-
-    // Attributes that we'll use dynamically
-    nodeDetails.setAttribute("id", args.id)
-    nodeDetails.setAttribute("type", args.type)
-    nodeDetails.setAttribute("value", args.value)
-    nodeDetails.setAttribute("parent", args.parent)
-    nodeDetails.setAttribute("children", args.children)
 
     nodeDetails.addEventListener("toggle", function(event) {
       if (nodeDetails.open) {
@@ -278,28 +300,35 @@ class Scene {
 
 // functions
 function context(menuItem, browserWindow, e) {
-  if (menuItem.label == "variable") {
-    ipc.send("create", {
-      x: mouse.x,
-      y: mouse.y,
-      type: "variable"
-    })
-  } else if (menuItem.label == "add") {
-    ipc.send("create", {
-      x: mouse.x,
-      y: mouse.y,
-      type: "add"
-    })
-  } else if (menuItem.label == "printGraph") {
-    ipc.send("help", "print-graph")
-  } else if (menuItem.label == "exit") {
-    ipc.send("file", "quit")
-  } else if (menuItem.label == "open") {
-    ipc.send("file", "open")
-  } else if (menuItem.label == "save as") {
-    ipc.send("file", "save as")
-  } else {
-    console.log(`The '${menuItem.label}' menu item hasn't been caught.`);
+  switch (menuItem.label) {
+    case "variable":
+      ipc.send("create", {
+        x: mouse.x,
+        y: mouse.y,
+        type: "variable"
+      })
+      break;
+    case "add":
+      ipc.send("create", {
+        x: mouse.x,
+        y: mouse.y,
+        type: "add"
+      })
+      break;
+    case "printGraph":
+      ipc.send("help", "print-graph")
+      break;
+    case "exit":
+      ipc.send("file", "quit")
+      break;
+    case "open":
+      ipc.send("file", "open")
+      break;
+    case "save as":
+      ipc.send("file", "save as")
+      break;
+    default:
+      console.log(`The '${menuItem.label}' menu item hasn't been caught.`);
   }
 }
 
@@ -322,19 +351,83 @@ function contextChange(arg) {
 }
 
 // Events
-window.addEventListener('contextmenu', (e) => {
+document.addEventListener('contextmenu', (e) => {
   e.preventDefault()
   updateMouse(e)
   contextChange("window")
   contextmenu.popup(remote.getCurrentWindow())
 }, false)
 
+// may simply remove this function later
+/* events fired on the draggable target
+document.addEventListener("drag", function( event ) {
+}, false);*/
+
+document.addEventListener("dragstart", function( event ) {
+  mainScene.dragging = event.target;
+  mainScene.dragID = event.target.getAttribute("id");
+}, false);
+
+document.addEventListener("dragend", function( event ) {
+    // reset the transparency
+    event.target.style.opacity = "";
+    // console.log("dragend fired.");
+    let payload = {
+      id:event.target.getAttribute("id"),
+      x:event.x,
+      y:event.y
+    }
+    ipc.send("update", payload)
+}, false);
+
+document.addEventListener("dragenter", function( event ) {
+    // highlight potential drop target when the draggable element enters it
+    if ( event.target.className == "node" ) {
+      if (event.target.getAttribute("id") != mainScene.dragID) {
+        event.target.style.opacity = .5;
+        mainScene.candrop = false
+      }
+    }
+
+}, false);
+
+document.addEventListener("dragleave", function( event ) {
+    // reset background of potential drop target when the draggable element leaves it
+    if ( event.target.className == "node" ) {
+      if (event.target.getAttribute("id") != mainScene.dragID) {
+        event.target.style.opacity = "";
+        mainScene.candrop = true
+      }
+    }
+
+}, false);
+
+document.addEventListener("drop", function( event ) {
+    // prevent default action (open as link for some elements)
+    event.preventDefault();
+    console.log("drop fired.");
+    if (mainScene.candrop) {
+
+      ipc.send("update", )
+    }
+}, false);
+
 ipc.on("update", function (event, args) {
-  let found = mainScene.findNode(args.id)
-  if (found) {
+  console.log("Update called");
+  let node = mainScene.findNode(args.id)
+  if (node) {
     // update the nodes html as per usual
-    console.log(`found was true\nthis was there${found}`);
+    console.log("Editing the node");
+    // console.log(args);
+    if (args.x) {
+      node.style.left = `${args.x}px`
+    }
+    if (args.y) {
+      node.style.top = `${args.y}px`
+    }
   } else {
+    console.log("Did not find a node.");
+    console.log("Creating one instead.");
     // a node has just been created
     mainScene.createNodeHtml(args)
   }
