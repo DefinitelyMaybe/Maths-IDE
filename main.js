@@ -149,10 +149,10 @@ class Graph {
 // Functions
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 800,
+    width: 1440,
+    height: 900,
     show: false,
-    frame: false
+    frame: true
   })
   mainGraph = new Graph()
 
@@ -294,9 +294,24 @@ ipc.on("update", function(event, args) {
 })
 
 ipc.on("help", function(event, args) {
-  console.log(args);
-  if (args == "print-graph") {
-    event.sender.send("help", mainGraph)
+  let payload = {}
+  switch (args) {
+    case "print-graph":
+      payload = {
+        case:"print",
+        data:mainGraph
+      }
+      event.sender.send("help", payload)
+      break;
+    case "display-markdown":
+      payload = {
+        case:"display",
+        data:"lol"
+      }
+      event.sender.send("help", payload)
+      break;
+    default:
+      event.sender.send("help", "with what?")
   }
 })
 

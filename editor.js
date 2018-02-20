@@ -2,6 +2,7 @@ const {
   remote
 } = require('electron')
 const ipc = require('electron').ipcRenderer
+const mathjax = require('mathjax-electron');
 const {
   Menu,
   MenuItem
@@ -53,7 +54,12 @@ let contextmenutemplate = [{
     submenu: [{
       label: 'printGraph',
       click: context
-    }]
+    },
+    {
+      label: 'markdownTest',
+      click: context
+    },
+  ]
   }
 ]
 let contextmenu = new Menu()
@@ -64,6 +70,22 @@ class Scene {
   constructor() {
     this.dragging = ""
     this.candrop = false
+    mathjax.loadMathJax(document)
+    this.test()
+  }
+  test(){
+    let p = document.createElement("p")
+    p.innerText = `\\begin{align}
+    \\dot{x} & = \\sigma(y-x) \\\\
+    \\dot{y} & = \\rho x - y - xz \\\\
+    \\dot{z} & = -\\beta z + xy
+    \\end{align}`
+    document.body.appendChild(p)
+    mathjax.typesetMath(p)
+    let s = document.createElement("p")
+    s.innerText = `\\frac{n!}{k!(n-k)!}`
+    document.body.appendChild(s)
+    mathjax.typesetMath(s)
   }
 
   findNode(id){
@@ -327,6 +349,9 @@ function context(menuItem, browserWindow, e) {
     case "save as":
       ipc.send("file", "save as")
       break;
+    case "markdownTest":
+      ipc.send("help", "display-markdown")
+      break;
     default:
       console.log(`The '${menuItem.label}' menu item hasn't been caught.`);
   }
@@ -353,15 +378,11 @@ function contextChange(arg) {
 // Events
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault()
+  // TODO: could setup icons and positions here?
   updateMouse(e)
   contextChange("window")
   contextmenu.popup(remote.getCurrentWindow())
 }, false)
-
-// may simply remove this function later
-/* events fired on the draggable target
-document.addEventListener("drag", function( event ) {
-}, false);*/
 
 document.addEventListener("dragstart", function( event ) {
   mainScene.dragging = event.target;
@@ -434,7 +455,19 @@ ipc.on("update", function (event, args) {
 })
 
 ipc.on("help", function(event, args) {
-  console.log(args);
+  switch (args.case) {
+    case "print":
+      console.log(args.data);
+      break;
+    case "display":
+      console.log(args.data);
+      let box = document.createElement("p")
+      box.innerText = args.data
+      document.appendChild(box)
+      break;
+    default:
+      console.log("You may have wanted something else to happen.");
+  }
 })
 
 // Initialize
