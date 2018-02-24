@@ -63,6 +63,8 @@ class Scene {
   constructor() {
     this.dragging = ""
     this.candrop = false
+    this.dx = 0;
+    this.dy = 0;
   }
 
   findNode(id){
@@ -207,25 +209,33 @@ document.addEventListener('contextmenu', (e) => {
   updateMouse(e)
   contextChange("window")
   contextmenu.popup(remote.getCurrentWindow())
-}, false)
+})
 
 document.addEventListener("dragstart", function( event ) {
   mainScene.dragging = event.target;
   mainScene.dragID = event.target.getAttribute("id");
-}, false);
+
+  let parent = event.target.parentElement
+  // console.log("dragend fired.");
+  let lenX = parent.style.left.length
+  let lenY = parent.style.top.length
+  let x2 = Number(parent.style.left.slice(0,lenX-2))
+  let y2 = Number(parent.style.top.slice(0,lenY-2))
+  mainScene.dx = x2 - event.x
+  mainScene.dy = y2 - event.y
+});
 
 document.addEventListener("dragend", function( event ) {
     // reset the transparency
     event.target.style.opacity = "";
-    // console.log("dragend fired.");
-    //console.log(event);
+
     let payload = {
       id:event.target.parentElement.getAttribute("id"),
-      x:event.x,
-      y:event.y
+      x:event.x + mainScene.dx,
+      y:event.y + mainScene.dy
     }
     ipc.send("update", payload)
-}, false);
+});
 
 document.addEventListener("dragenter", function( event ) {
     // highlight potential drop target when the draggable element enters it
@@ -236,7 +246,7 @@ document.addEventListener("dragenter", function( event ) {
       }
     }
 
-}, false);
+});
 
 document.addEventListener("dragleave", function( event ) {
     // reset background of potential drop target when the draggable element leaves it
@@ -247,7 +257,7 @@ document.addEventListener("dragleave", function( event ) {
       }
     }
 
-}, false);
+});
 
 document.addEventListener("drop", function( event ) {
     // prevent default action (open as link for some elements)
@@ -257,7 +267,7 @@ document.addEventListener("drop", function( event ) {
 
       ipc.send("update")
     }
-}, false);
+});
 
 ipc.on("update", function (event, args) {
   let node = mainScene.findNode(args.id)
