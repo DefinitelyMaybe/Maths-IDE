@@ -1,1 +1,1 @@
-[{"id":0,"type":"variable","x":325,"y":285,"value":"","parent":[],"children":[]},{"id":1,"type":"add","x":392,"y":304,"value":"","parent":[],"children":[]},{"id":2,"type":"variable","x":408,"y":333,"value":"","parent":[],"children":[]}]
+[{"id":1,"type":"text","x":46,"y":11,"value":" \\[\n   M=\n  \\left[ {\\begin{array}{cc}\n   1 & 0 \\\\\n   0 & 1 \\\\\n  \\end{array} } \\right]\n\\]"}]

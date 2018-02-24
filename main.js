@@ -15,6 +15,26 @@ let mainWindow
 let mainGraph
 let template = [
   {
+    label: 'file',
+    submenu: [
+      {
+        label: 'open',
+        click: openFile,
+      },
+      {
+        label: 'save as',
+        click: saveFileAs,
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'exit',
+        role: 'close'
+      }
+    ]
+  },
+  {
     label: 'View',
     submenu: [{
         role: 'reload'
@@ -55,9 +75,10 @@ class Node {
     this.type = args.type
     this.x = args.x
     this.y = args.y
-    this.value = ""
-    this.parent = []
-    this.children = []
+    this.value = args.value || ""
+    // may be useful later
+    //this.parent = []
+    //this.children = []
   }
 
   evaluateValue(){
@@ -81,25 +102,6 @@ class Graph {
     this.nextID = 1
     this.unusedIDS = []
     this.nodes = []
-  }
-
-  loadGraph(data){
-    // assuming the data has already been through JSON.parse()
-    console.log(data);
-  }
-
-  calculateGraph() {
-    let roots = this.findRoots()
-    for (var i = 0; i < roots.length; i++) {
-      let root = roots[i]
-      if (root.children.length > 0) {
-        root.value = root.evaluateValue()
-        root.updateNodeHtml()
-      } else {
-        root.value = ""
-        root.updateNodeHtml()
-      }
-    }
   }
 
   getID(){
@@ -132,17 +134,6 @@ class Graph {
     let lastHalf = this.nodes.slice(x)
     let firstHalf = this.nodes.slice(0, x)
     this.nodes = firstHalf.concat(lastHalf)
-  }
-
-  findRoots(){
-    let roots = []
-    for (var i = 0; i < this.nodes.length; i++) {
-      let node = this.nodes[i]
-      if (node.parent.length == 0) {
-        roots.push(node)
-      }
-    }
-    return roots
   }
 }
 
@@ -197,7 +188,8 @@ function openFile() {
         if (err) {
           console.warn(err);
         }
-        mainGraph.loadGraph(JSON.parse(data))
+        // expecting the data to be JSON
+        mainWindow.webContents.send("load", JSON.parse(data))
       })
     }
   })
@@ -249,9 +241,13 @@ app.on('activate', function() {
 
 ipc.on("create", function(event, args) {
   if (args.type) {
-    if (!args.id) {
+    // TODO: Loading arg id's nicely
+    if (args.id) {
+      mainGraph.nextID += 1
+    } else {
       args.id = mainGraph.getID()
     }
+
     if (!args.x) {
       args.x = 0
     }
@@ -268,16 +264,18 @@ ipc.on("update", function(event, args) {
   // It turns out that 0 is false
   if (args.id) {
     // later I may need to add a check here that the node was found.
+    console.log("updating");
     let node = mainGraph.getNode(args.id)
+    console.log(node);
     if (args.value) {
       node.value = args.value
     }
-    if (args.children) {
+    /*if (args.children) {
       node.children = args.children
     }
     if (args.parent) {
       node.parent = args.parent
-    }
+    }*/
     if (args.x) {
       node.x = args.x
     }
@@ -287,9 +285,6 @@ ipc.on("update", function(event, args) {
     event.sender.send("update", args)
   } else {
     console.log(`tired to update but there was no id.`);
-    for (var key in args) {
-      console.log(`${key} - ${args[key]}`);
-    }
   }
 })
 
@@ -317,15 +312,6 @@ ipc.on("help", function(event, args) {
 
 ipc.on("file", function(event, args) {
   switch (args) {
-    case "open":
-      openFile()
-      break;
-    case "save as":
-      saveFileAs()
-      break;
-    case "quit":
-      app.quit()
-      break;
     default:
       console.log("nothing in the likes");
   }
