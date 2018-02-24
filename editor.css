@@ -1,5 +1,6 @@
 html {
   background-color: #242424;
+  font-size: 30px;
   height: 100%;
   color: grey;
 }
@@ -13,8 +14,17 @@ body {
 
 .node {
   position: absolute;
-  background: black;
+  /*background: black;
   width: 40px;
-  height: 40px;
+  height: 40px;*/
   color: white;
+}
+
+div {
+  position: absolute;
+}
+
+textarea {
+  height: 200px;
+  width: 300px;
 }

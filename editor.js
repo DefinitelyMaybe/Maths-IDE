@@ -2,7 +2,8 @@ const {
   remote
 } = require('electron')
 const ipc = require('electron').ipcRenderer
-const mathjax = require('mathjax-electron');
+const mathjax = require('mathjax');
+const $ = require('jquery');
 const {
   Menu,
   MenuItem
@@ -15,7 +16,7 @@ let mouse = {
   y: 0
 }
 let contextmenutemplate = [{
-    label: 'File',
+    label: 'file',
     submenu: [{
         label: 'new',
         click: context,
@@ -38,19 +39,11 @@ let contextmenutemplate = [{
     ]
   },
   {
-    label: 'Create',
-    submenu: [{
-        label: 'variable',
-        click: context
-      },
-      {
-        label: 'add',
-        click: context
-      },
-    ]
+    label: 'create',
+    click: context
   },
   {
-    label: 'Helpers',
+    label: 'helpers',
     submenu: [{
       label: 'printGraph',
       click: context
@@ -70,26 +63,10 @@ class Scene {
   constructor() {
     this.dragging = ""
     this.candrop = false
-    mathjax.loadMathJax(document)
-    this.test()
-  }
-  test(){
-    let p = document.createElement("p")
-    p.innerText = `\\begin{align}
-    \\dot{x} & = \\sigma(y-x) \\\\
-    \\dot{y} & = \\rho x - y - xz \\\\
-    \\dot{z} & = -\\beta z + xy
-    \\end{align}`
-    document.body.appendChild(p)
-    mathjax.typesetMath(p)
-    let s = document.createElement("p")
-    s.innerText = `\\frac{n!}{k!(n-k)!}`
-    document.body.appendChild(s)
-    mathjax.typesetMath(s)
   }
 
   findNode(id){
-    let items = document.getElementsByTagName("details")
+    let items = document.getElementsByClassName("node")
     for (var i = 0; i < items.length; i++) {
       if (items[i].getAttribute("id") == id) {
         return items[i];
@@ -99,242 +76,78 @@ class Scene {
   }
 
   createNodeHtml(args) {
-    // TODO: Peicing things together and creating cohension between elements/nodes
-    // i.e. like logos clipping into one another
-    // or just plain text (what about mark up?)
-    // the 'detail' html element's default behaviour is useful for it's open and closed states
-    let nodeDetails = document.createElement("details")
+    let node = document.createElement("div")
+    let nodeDetails = document.createElement("textarea")
     let nodeSummary = document.createElement("summary")
-    switch (args.type) {
-      case "add":
-        nodeSummary.innerText = "+"
-        break;
-      case "constant":
-        nodeSummary.innerText = "1"
-        break;
-      case "variable":
-        nodeSummary.innerText = "x"
-        break;
-      case "matrix":
-        nodeSummary.innerText = "[]"
-        break;
-      default:
-        nodeSummary.innerText = "Placeholder"
-    }
-    nodeDetails.appendChild(nodeSummary)
-    nodeDetails.setAttribute("draggable", "true")
-    nodeDetails.setAttribute("class", "node")
+    node.appendChild(nodeDetails)
+    node.appendChild(nodeSummary)
+
+    nodeSummary.setAttribute("draggable", "true")
+    nodeDetails.setAttribute("draggable", "false")
+    node.setAttribute("class", "node")
+    // by default when a node is created the details will be shown first
+    node.setAttribute("open", "true")
 
     // Attributes that we'll use dynamically
-    nodeDetails.setAttribute("id", args.id)
-    nodeDetails.setAttribute("type", args.type)
-    nodeDetails.setAttribute("value", args.value)
-    nodeDetails.setAttribute("parent", args.parent)
-    nodeDetails.setAttribute("children", args.children)
-    nodeDetails.style.left = `${args.x}px`
-    nodeDetails.style.top = `${args.y}px`
+    node.setAttribute("id", args.id)
+    node.setAttribute("type", args.type)
+    node.setAttribute("value", args.value)
+    node.setAttribute("parent", args.parent)
+    node.setAttribute("children", args.children)
+    node.style.left = `${args.x}px`
+    node.style.top = `${args.y}px`
 
-    // The form for changing node
-    let nodeForm = document.createElement("form")
-    let formValueLabel = document.createElement("label")
-    let formValueInput = document.createElement("input")
-    let formbreakline1 = document.createElement("br")
-    let formSubmit = document.createElement("button")
-    formValueLabel.innerText = "Value"
-    formSubmit.innerText = "submit"
-    nodeForm.method = "GET"
-    nodeForm.action = "test1"
-    nodeForm.appendChild(formValueLabel)
-    nodeForm.appendChild(formValueInput)
-    nodeForm.appendChild(formbreakline1)
-    nodeForm.appendChild(formSubmit)
-    nodeDetails.appendChild(nodeForm)
+    node.addEventListener("toggle", function(event) {
+      //assuming that the textarea will be the first and summary is the last
+      let details = event.target.firstElementChild
+      let summary = event.target.lastElementChild
 
-    nodeDetails.addEventListener("toggle", function(event) {
-      if (nodeDetails.open) {
-        // The node has been opened, editing may occur
-      } else {
-        // just the summary of the node will be seen
-        let updateArgs = {id:args.id}
-        ipc.send("update", updateArgs)
+      summary.innerText = details.value
+      typesetMath(summary)
+      if (summary.innerText.length == 0) {
+        // placeholder text to begin with
+        nodeSummary.innerText = "{ }"
+        /*
+        \begin{align}
+        \dot{x} & = \sigma(y-x) \\
+        \dot{y} & = \rho x - y - xz \\
+        \dot{z} & = -\beta z + xy
+        \end{align}
+        */
       }
+      $(nodeDetails).hide()
+      $(nodeSummary).show()
+
+      // updating text - need to be careful of backslashes
+      // TODO: need to update node value
+      //let updateArgs = {id:args.id}
+      //ipc.send("update", updateArgs)
+    })
+
+    nodeSummary.addEventListener("dblclick", function(event) {
+      $(nodeDetails).show()
+      $(nodeSummary).hide()
+    })
+
+    nodeDetails.addEventListener("focusout", function(event){
+      // we the user stops editing the node.
+      let e = new Event("toggle")
+      node.dispatchEvent(e)
     })
 
     // finally adding it to the html
-    document.body.appendChild(nodeDetails)
-  }
-
-  updateNodeHtml(node) {
-    node.setAttribute("value", this.value)
-    node.setAttribute("parent", this.parent)
-    node.setAttribute("children", this.children)
-  }
-
-  editNode() {
-    // use form with whos action is to call one of the functions here with payload which will then update the node + html
-    // console.log(this) // <- just so your aware of the variable
-    let x = document.getElementById("editForm")
-    let identifier = "editForm"
-
-    // remove all elements from the form
-    removeEditFormChildren()
-
-    // Populate form with appropriate inputs
-    // ID and TYPE should not be editable
-    let id = document.createElement("p")
-    id.setAttribute("id", identifier + "id")
-    id.innerText = "ID: " + this.getAttribute("id")
-    x.appendChild(id)
-    let type = document.createElement("p")
-    type.innerText = "TYPE: " + this.getAttribute("type")
-    x.appendChild(type)
-
-    // Value and edges should be editable
-    let valueLabel = document.createElement("label")
-    valueLabel.setAttribute("for", "value")
-    valueLabel.innerText = "VALUE:"
-    x.appendChild(valueLabel)
-    let value = document.createElement("input")
-    value.setAttribute("name", "value")
-    value.setAttribute("id", identifier + "value")
-    value.setAttribute("value", this.getAttribute("value"))
-    x.appendChild(value)
-    // this is just for looks
-    let br1 = document.createElement("br")
-    x.appendChild(br1)
-
-    // Later on edges should not be edited this way.
-    let parentLabel = document.createElement("label")
-    parentLabel.setAttribute("for", "parent")
-    parentLabel.innerText = "PARENT:"
-    x.appendChild(parentLabel)
-    let parent = document.createElement("input")
-    parent.setAttribute("name", "value")
-    parent.setAttribute("id", identifier + "parent")
-    parent.setAttribute("value", this.getAttribute("parent"))
-    x.appendChild(parent)
-    // this is just for looks
-    let br2 = document.createElement("br")
-    x.appendChild(br2)
-
-    // Second for child nodes
-    let childrenLabel = document.createElement("label")
-    childrenLabel.setAttribute("for", "children")
-    childrenLabel.innerText = "CHILDREN:"
-    x.appendChild(childrenLabel)
-    let children = document.createElement("input")
-    children.setAttribute("name", "value")
-    children.setAttribute("id", identifier + "children")
-    children.setAttribute("value", this.getAttribute("children"))
-    x.appendChild(children)
-    // this is just for looks
-    let br3 = document.createElement("br")
-    x.appendChild(br3)
-
-    // This is not good user interface to put this button here - given the interfaces current rendering.
-    let deleteLabel = document.createElement("label")
-    deleteLabel.setAttribute("for", "deleteThingy")
-    deleteLabel.innerText = "DELETE?"
-    x.appendChild(deleteLabel)
-    let deleteThingy = document.createElement("input")
-    deleteThingy.setAttribute("type", "radio")
-    deleteThingy.setAttribute("id", identifier + "deleteThingy")
-    x.appendChild(deleteThingy)
-    // this is just for looks
-    let br4 = document.createElement("br")
-    x.appendChild(br4)
-
-    // finish with the submit button which will send the data to the (Graph or node?)
-    let submit = document.createElement("input")
-    submit.setAttribute("type", "button")
-    submit.setAttribute("value", "submit")
-    submit.addEventListener("click", getEditNodeFormVariables)
-    x.appendChild(submit)
-  }
-
-  removeEditFormChildren() {
-    let x = document.getElementById("editForm")
-    // remove all elements from the form
-    while (x.firstChild) {
-      x.removeChild(x.firstChild)
-    }
-  }
-
-  getEditNodeFormVariables() {
-    // get all of the variables from the html
-    let x = document.getElementById("editForm")
-    let identifier = "editForm"
-    let data = {}
-
-    // which node?
-    let id = document.getElementById(identifier + "id")
-    data["id"] = Number(id.innerText.substr(4))
-
-    // what value?
-    let value = document.getElementById(identifier + "value")
-    data["value"] = Number(value.value)
-
-    // what edges?
-    let parent = document.getElementById(identifier + "parent")
-    data["parent"] = parent.value.split(",")
-    if (data["parent"].length > 0) {
-      if (data["parent"].length > 1) {
-        // It is easy to produces strange results from this piece of code. It is not intended to stay.
-        for (var i = 0; i < data["parent"].length; i++) {
-          data["parent"][i] = Number(data["parent"][i])
-        }
-      } else {
-        if (data["parent"][0] == "") {
-          data["parent"].pop()
-        } else {
-          data["parent"][0] = Number(data["parent"][0])
-        }
-      }
-    }
-
-    let children = document.getElementById(identifier + "children")
-    data["children"] = children.value.split(",")
-    if (data["children"].length > 0) {
-      if (data["children"].length > 1) {
-        // It is easy to produces strange results from this piece of code. It is not intended to stay.
-        for (var i = 0; i < data["children"].length; i++) {
-          data["children"][i] = Number(data["children"][i])
-        }
-      } else {
-        if (data["children"][0] == "") {
-          data["children"].pop()
-        } else {
-          data["children"][0] = Number(data["children"][0])
-        }
-      }
-    }
-
-    let node = this.getNode(data["id"])
-    node.value = data["value"]
-    node.parent = data["parent"]
-    node.children = data["children"]
-    node.updateNodeHtml()
-
-    // Once all that is done, remove the form elements
-    removeEditFormChildren()
+    document.body.appendChild(node)
   }
 }
 
 // functions
 function context(menuItem, browserWindow, e) {
   switch (menuItem.label) {
-    case "variable":
+    case "create":
       ipc.send("create", {
         x: mouse.x,
         y: mouse.y,
-        type: "variable"
-      })
-      break;
-    case "add":
-      ipc.send("create", {
-        x: mouse.x,
-        y: mouse.y,
-        type: "add"
+        type: "text"
       })
       break;
     case "printGraph":
@@ -375,6 +188,18 @@ function contextChange(arg) {
   }
 }
 
+function typesetMath(container, callback){
+  try {
+    if (typeof callback === "function") {
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, container], callback);
+    } else {
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
+    }
+  } catch (e) {
+    throw new Error(error.message, "typesetMath");
+  }
+}
+
 // Events
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault()
@@ -393,8 +218,9 @@ document.addEventListener("dragend", function( event ) {
     // reset the transparency
     event.target.style.opacity = "";
     // console.log("dragend fired.");
+    //console.log(event);
     let payload = {
-      id:event.target.getAttribute("id"),
+      id:event.target.parentElement.getAttribute("id"),
       x:event.x,
       y:event.y
     }
@@ -429,16 +255,15 @@ document.addEventListener("drop", function( event ) {
     console.log("drop fired.");
     if (mainScene.candrop) {
 
-      ipc.send("update", )
+      ipc.send("update")
     }
 }, false);
 
 ipc.on("update", function (event, args) {
-  console.log("Update called");
   let node = mainScene.findNode(args.id)
   if (node) {
     // update the nodes html as per usual
-    console.log("Editing the node");
+    console.log("Editing the document node");
     // console.log(args);
     if (args.x) {
       node.style.left = `${args.x}px`
@@ -449,7 +274,6 @@ ipc.on("update", function (event, args) {
   } else {
     console.log("Did not find a node.");
     console.log("Creating one instead.");
-    // a node has just been created
     mainScene.createNodeHtml(args)
   }
 })
@@ -478,3 +302,4 @@ let helpersContext = new MenuItem(contextmenutemplate[2])
 contextmenu.append(optionsContext)
 contextmenu.append(createContext)
 contextmenu.append(helpersContext)
+// JQuery.fx.off = true
