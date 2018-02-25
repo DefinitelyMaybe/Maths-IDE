@@ -188,6 +188,8 @@ function openFile() {
         if (err) {
           console.warn(err);
         }
+        // resetting the old graph for the new data because our scene may have things in it already
+        mainGraph = new Graph()
         // expecting the data to be JSON
         mainWindow.webContents.send("load", JSON.parse(data))
       })
@@ -242,11 +244,7 @@ app.on('activate', function() {
 ipc.on("create", function(event, args) {
   if (args.type) {
     // TODO: Loading arg id's nicely
-    if (args.id) {
-      mainGraph.nextID += 1
-    } else {
-      args.id = mainGraph.getID()
-    }
+    args.id = mainGraph.getID()
 
     if (!args.x) {
       args.x = 0

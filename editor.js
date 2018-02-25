@@ -51,6 +51,7 @@ class Scene {
 
   createNodeHtml(args) {
     let node = document.createElement("div")
+    document.body.appendChild(node)
     let nodeDetails = document.createElement("textarea")
     let nodeSummary = document.createElement("summary")
     node.appendChild(nodeDetails)
@@ -62,6 +63,12 @@ class Scene {
     // by default when a node is created the details will be shown first
     if (args.value) {
       nodeDetails.value = args.value
+      typesetMath(nodeSummary, function() {
+        let e = new Event("toggle")
+        node.dispatchEvent(e)
+      })
+      $(nodeDetails).hide()
+      $(nodeSummary).show()
     }
 
     // Attributes that we'll use dynamically
@@ -104,9 +111,6 @@ class Scene {
       let e = new Event("toggle")
       node.dispatchEvent(e)
     })
-
-    // finally adding it to the html
-    document.body.appendChild(node)
   }
 }
 
@@ -240,6 +244,9 @@ ipc.on("update", function (event, args) {
 })
 
 ipc.on("load", function (event, args) {
+  // remove all the current nodes from the scene
+  $(".node").remove()
+  // create the new ones
   for (var i = 0; i < args.length; i++) {
     ipc.send("create", args[i])
   }
@@ -267,4 +274,15 @@ let createContext = new MenuItem(contextmenutemplate[0])
 let helpersContext = new MenuItem(contextmenutemplate[1])
 contextmenu.append(createContext)
 contextmenu.append(helpersContext)
-// JQuery.fx.off = true
+/*MathJax.Hub.Config({
+  //config: ["local/local.js","MMLtoHTML.js"],
+  //styleSheets: ["MathJax.css"],
+  //styles: {},
+  jax: ["input/TeX", "input/MathML", "input/AsciiMath", "output/HTML-CSS"],
+  extensions: ["tex2jax.js", "mml2jax.js", "asciimath2jax.js"],
+  // All elements have their typing called on them because their dynamic
+  skipStartupTypeset: true,
+  // Hopefully this means only node containers can be processed by mathjax
+  elements: [".node"],
+});
+*/
