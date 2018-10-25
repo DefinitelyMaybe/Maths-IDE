@@ -1,14 +1,19 @@
 {
-  "name": "origin",
-  "version": "0.0.1",
-  "description": "A maths development environment",
-  "main": "./main.js",
+  "name": "matrix",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "electron ."
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
   },
-  "repository": "https://github.com/DefinitelyMaybe/Origin",
-  "author": "DefinitelyMaybe",
-  "license": "",
-  "bugs": "https://github.com/DefinitelyMaybe/Origin/issues",
-  "homepage": "https://github.com/DefinitelyMaybe/Origin#readme"
+  "dependencies": {
+    "vue": "^2.5.17"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-typescript": "^3.0.5",
+    "@vue/cli-service": "^3.0.5",
+    "typescript": "^3.0.0",
+    "vue-template-compiler": "^2.5.17"
+  }
 }
