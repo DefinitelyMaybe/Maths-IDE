@@ -151,11 +151,12 @@ function contextChange(arg) {
 }
 
 function typesetMath(container, callback){
+  console.log("typeset was called.");
   try {
     if (typeof callback === "function") {
-      MathJax.Hub.Queue(["Typeset", MathJax.Hub, container], callback);
+      mathjax.Hub.Queue(["Typeset", mathjax.Hub, container], callback);
     } else {
-      MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
+      mathjax.Hub.Queue(["Typeset", mathjax.Hub, container]);
     }
   } catch (e) {
     throw new Error(error.message, "typesetMath");
@@ -274,9 +275,9 @@ let createContext = new MenuItem(contextmenutemplate[0])
 let helpersContext = new MenuItem(contextmenutemplate[1])
 contextmenu.append(createContext)
 contextmenu.append(helpersContext)
-/*MathJax.Hub.Config({
+/*mathjax.Hub.Config({
   //config: ["local/local.js","MMLtoHTML.js"],
-  //styleSheets: ["MathJax.css"],
+  //styleSheets: ["mathjax.css"],
   //styles: {},
   jax: ["input/TeX", "input/MathML", "input/AsciiMath", "output/HTML-CSS"],
   extensions: ["tex2jax.js", "mml2jax.js", "asciimath2jax.js"],

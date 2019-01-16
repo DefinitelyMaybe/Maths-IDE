@@ -1,7 +1,6 @@
 const electron = require('electron');
 const path = require('path');
 const url = require('url');
-const os = require('os');
 const fs = require('fs');
 
 const app = electron.app
