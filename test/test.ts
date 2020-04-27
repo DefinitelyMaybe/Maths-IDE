@@ -1,6 +1,9 @@
+//import { assert } from "https://deno.land/std/testing/asserts.ts";
+
 // import htmlTestData from "../test/html.ts";
-// import ScriptTestData from "../test/script.ts";
 // import { HTMLBuilder } from "../src/extensions/html/html-builder.ts";
+
+// import ScriptTestData from "../test/script.ts";
 // import { ScriptBuilder } from "../src/extensions/scripts/script-builder.ts";
 
 // const encoder = new TextEncoder();
@@ -17,6 +20,8 @@
 // Deno.writeFileSync("./test/output/html.json", xd);
 // Deno.writeFileSync("./test/output/script.json", yd);
 // Deno.writeFileSync("./test/output/script.js", sd);
+
+//assert()
 
 // and then check that the outputs are equal to the inputs
 //Register test
