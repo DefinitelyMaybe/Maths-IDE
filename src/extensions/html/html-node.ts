@@ -1,19 +1,45 @@
-import { Node, NodeParams } from '../../node.ts'
+import {
+  VariableNode,
+  VariableNodeParams,
+  FunctionNode,
+  FunctionNodeParams,
+} from "../scripts/script-nodes.ts";
 
-interface HTMLNodeParams extends NodeParams {
-  position: number[]
-  el: string
+interface HTMLVariableNodeParams extends VariableNodeParams {
+  position: number[];
+  el: string;
 }
 
-class HTMLNode extends Node {
-  position: Number[]
-  el: string
+class HTMLVariableNode extends VariableNode {
+  position: Number[];
+  el: string;
   /* defines the node for the graph to be later output as an html element */
-  constructor (params:HTMLNodeParams) {
-    super(params)
-    this.position = params.position
-    this.el = params.el
+  constructor(params: HTMLVariableNodeParams) {
+    super(params);
+    this.position = params.position;
+    this.el = params.el;
   }
 }
 
-export { HTMLNode, HTMLNodeParams }
+interface HTMLFunctionNodeParams extends FunctionNodeParams {
+  position: number[];
+  el: string;
+}
+
+class HTMLFunctionNode extends FunctionNode {
+  position: Number[];
+  el: string;
+  /* defines the node for the graph to be later output as an html element */
+  constructor(params: HTMLFunctionNodeParams) {
+    super(params);
+    this.position = params.position;
+    this.el = params.el;
+  }
+}
+
+export {
+  HTMLVariableNode,
+  HTMLVariableNodeParams,
+  HTMLFunctionNode,
+  HTMLFunctionNodeParams,
+};
