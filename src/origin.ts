@@ -13,24 +13,36 @@ async function HTMLBuild() {
   // ensure output folder
   ensureDirSync('./build/html')
 
-  // compile main.ts and graph.ts
-  // const graphData = Deno.readFileSync("./test/html/graph.ts")
-  // const graphString = decoder.decode(graphData)
+  // copy main.ts and compiled graph.ts
+  const mainData = Deno.readFileSync("./test/html/main.js")
+  Deno.writeFileSync("./build/html/main.js", mainData)
 
-  // const mainData = Deno.readFileSync("./test/html/main.ts")
-  // const mainString = decoder.decode(mainData)
-
-  const [diag, emitMap] = await Deno.compile("./test/html/main.ts")//, undefined, {"lib":["dom", "deno.ns"]});
+  let [diag, emit] = await Deno.compile("./test/html/graph.ts")
   
   // ensuring no diagnostics are returned
   if (diag == null) {
-    console.log(emitMap)
-    // output these files to the build folder
-    // const mainScript = encoder.encode(emitMap["main.js"])
-    // const graphScript = encoder.encode(emitMap["graph.js"])
-    
-    // Deno.writeFileSync("./build/html/main.js", mainScript)
-    // Deno.writeFileSync("./build/html/graph.js", graphScript)
+    for (const key in emit) {
+      const data = emit[key]
+      const name = key.split('/').pop()
+      Deno.writeFileSync(`./build/html/${name}`, encoder.encode(data))
+    }
+  } else {
+    // otherwise logging their messages
+    diag.forEach(obj => {
+      console.log(obj.message) 
+    });
+  }; 
+
+  // create html-builder.ts
+  [diag, emit] = await Deno.bundle("./src/extensions/html-builder.ts")
+  
+  // ensuring no diagnostics are returned
+  if (diag == null) {
+    for (const key in emit) {
+      const data = emit[key]
+      const name = key.split('/').pop()
+      Deno.writeFileSync(`./build/html/${name}`, encoder.encode(data))
+    }
   } else {
     // otherwise logging their messages
     diag.forEach(obj => {
