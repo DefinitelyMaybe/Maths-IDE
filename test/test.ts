@@ -29,7 +29,7 @@ Deno.test({
 });
 
 //Run tests
-const runInfo = await Deno.runTests() || undefined;
+const runInfo = await Deno.runTests();
 if (runInfo) {
   console.log(runInfo.duration);  // all tests duration, e.g. "5" (in ms)
   console.log(runInfo.passed);  //e.g. 1
