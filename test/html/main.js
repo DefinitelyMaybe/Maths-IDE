@@ -1,5 +1,5 @@
-import data from './graph.ts'
-import { HTMLBuilder } from '../../src/extensions/html/html-builder.ts'
+import data from './graph.js'
+import { HTMLBuilder } from './bundle-html-builder.js'
 
 console.log(data)
 
