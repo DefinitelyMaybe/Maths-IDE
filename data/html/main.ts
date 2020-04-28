@@ -1,6 +1,6 @@
 // @ts-nocheck
 import data from './graph.js'
-import { HTMLBuilder } from './bundle-html-builder.js'
+import { HTMLBuilder } from './bundle.htmlbuilder.js'
 
 console.log(data)
 

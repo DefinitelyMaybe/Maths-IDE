@@ -1,4 +1,4 @@
-//import { assert } from "https://deno.land/std/testing/asserts.ts";
+//import { assert } from "https://deno.land/std@v0.41.0/testing/asserts.ts";
 
 // import htmlTestData from "../test/html.ts";
 // import { HTMLBuilder } from "../src/extensions/html/html-builder.ts";
