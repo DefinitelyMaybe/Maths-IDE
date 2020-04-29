@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import {
   VariableNode,
   VariableNodeParams,
@@ -19,6 +20,9 @@ class HTMLVariableNode extends VariableNode {
     this.position = params.position;
     this.el = params.el;
   }
+  build () {
+    return document.createElement(this.el)
+  }
 }
 
 interface HTMLFunctionNodeParams extends FunctionNodeParams {
@@ -34,6 +38,10 @@ class HTMLFunctionNode extends FunctionNode {
     super(params);
     this.position = params.position;
     this.el = params.el;
+  }
+
+  build () {
+    return document.createElement(this.el)
   }
 }
 

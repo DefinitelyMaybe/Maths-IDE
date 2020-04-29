@@ -46,7 +46,7 @@ class HTMLBuilder extends Graph {
     this.nodes.forEach((obj) => {
       if (obj) {
         // create the node
-        const node = document.createElement(obj.el);
+        const node = obj.build()
 
         // attach properties
         // attach listeners
