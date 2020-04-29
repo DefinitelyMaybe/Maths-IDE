@@ -1,12 +1,23 @@
 import { ensureDirSync } from 'https://deno.land/std@v0.41.0/fs/mod.ts'
+import { ScriptBuilder } from './extensions/scripts/script-builder.ts'
+import data from '../data/scripts/graph.ts'
 
-const decoder = new TextDecoder()
+//const decoder = new TextDecoder()
 const encoder = new TextEncoder()
 
 function main() {
-  
-  console.log("main")
-  HTMLBuild();
+  ScriptBuild()
+  //HTMLBuild();
+}
+
+function ScriptBuild() {
+  // load up the graph
+  const builder = new ScriptBuilder(data)
+  // build the output script
+  const outdata = builder.build()
+  // save the ouput script and the in memory descriptions of the builder
+  Deno.writeFileSync("./build/script.js", encoder.encode(outdata))
+  Deno.writeFileSync("./build/builder.json", encoder.encode(JSON.stringify(builder, undefined, '\t')))
 }
 
 async function HTMLBuild() {
@@ -14,10 +25,10 @@ async function HTMLBuild() {
   ensureDirSync('./build/html')
 
   // copy main.ts and compiled graph.ts
-  const mainData = Deno.readFileSync("./test/html/main.ts")
+  const mainData = Deno.readFileSync("./data/html/main.ts")
   Deno.writeFileSync("./build/html/main.js", mainData)
 
-  const [diag, emit] = await Deno.compile("./test/html/graph.ts")
+  const [diag, emit] = await Deno.compile("./data/html/graph.ts")
   
   // // ensuring no diagnostics are returned
   if (diag == null) {
@@ -47,7 +58,7 @@ async function HTMLBuild() {
   };
 
   const [diag3, emit3] = await Deno.bundle(
-    "./src/test.ts",
+    "./src/temp.ts",
     undefined,
     {
       lib: ["dom","esnext"]
@@ -70,7 +81,7 @@ async function HTMLBuild() {
   };
 
   // copy .html file from test/html folder to output folder
-  const htmlData = Deno.readFileSync("./test/html/index.html")
+  const htmlData = Deno.readFileSync("./data/html/index.html")
   Deno.writeFileSync("./build/html/index.html", htmlData)
   
 }
