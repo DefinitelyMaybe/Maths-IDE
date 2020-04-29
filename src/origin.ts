@@ -6,18 +6,22 @@ import data from '../data/scripts/graph.ts'
 const encoder = new TextEncoder()
 
 function main() {
+  console.log("origin is building out examples")
   ScriptBuild()
-  //HTMLBuild();
+  HTMLBuild();
 }
 
 function ScriptBuild() {
+  // make sure the folders exist
+  ensureDirSync('./build/script')
+
   // load up the graph
   const builder = new ScriptBuilder(data)
   // build the output script
   const outdata = builder.build()
   // save the ouput script and the in memory descriptions of the builder
-  Deno.writeFileSync("./build/script.js", encoder.encode(outdata))
-  Deno.writeFileSync("./build/builder.json", encoder.encode(JSON.stringify(builder, undefined, '\t')))
+  Deno.writeFileSync("./build/script/script.js", encoder.encode(outdata))
+  Deno.writeFileSync("./build/script/builder.json", encoder.encode(JSON.stringify(builder, undefined, '\t')))
 }
 
 async function HTMLBuild() {
@@ -27,6 +31,10 @@ async function HTMLBuild() {
   // copy main.ts and compiled graph.ts
   const mainData = Deno.readFileSync("./data/html/main.ts")
   Deno.writeFileSync("./build/html/main.js", mainData)
+
+  // copy style.css
+  const styleData = Deno.readFileSync("./data/html/style.css")
+  Deno.writeFileSync("./build/html/style.css", styleData)
 
   const [diag, emit] = await Deno.compile("./data/html/graph.ts")
   
@@ -44,38 +52,26 @@ async function HTMLBuild() {
     });
   };
 
-  // create html-builder.ts
-  const [diag2, emit2] = await Deno.bundle("./src/extensions/html/html-builder.ts")
-  
-  // ensuring no diagnostics are returned
-  if (diag2 == null) {
-    Deno.writeFileSync(`./build/html/bundle.htmlbuilder.js`, encoder.encode(emit2))
-  } else {
-    console.log("diag2")
-    diag2.forEach(obj => {
-      console.log(obj.message)
-    });
-  };
-
-  const [diag3, emit3] = await Deno.bundle(
-    "./src/temp.ts",
+  // bundle html-builder.js
+  const [diag2, emit2] = await Deno.bundle(
+    "src/extensions/html/html-builder.ts",
     undefined,
     {
-      lib: ["dom","esnext"]
+      lib: ["esnext"]
     }
   )
   
   // ensuring no diagnostics are returned
-  if (diag3 == null) {
-    // for (const key in emit3) {
+  if (diag2 == null) {
+    // for (const key in emit2) {
     //   const data = encoder.encode(emit[key])
     //   const name = key.split('/').pop()
     //   Deno.writeFileSync(`./build/${name}`, data)
     // }
-    Deno.writeFileSync(`./build/bundle.test.js`, encoder.encode(emit3))
+    Deno.writeFileSync(`./build/html/bundle.htmlbuilder.js`, encoder.encode(emit2))
   } else {
-    console.log("diag3")
-    diag3.forEach(obj => {
+    console.log("diag2")
+    diag2.forEach(obj => {
       console.log(obj.message)
     });
   };
@@ -86,10 +82,8 @@ async function HTMLBuild() {
   
 }
 
-// if (import.meta.main) {
-//   main()
-// }
-
-main()
+if (import.meta.main) {
+  main()
+}
 
 export {};
