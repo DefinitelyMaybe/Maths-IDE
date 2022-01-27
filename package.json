@@ -10,7 +10,7 @@
     "matter-js": "^0.16.1",
     "poly-decomp": "^0.3.0",
     "snowpack": "^3.0.11",
-    "three": "^0.125.2",
+    "three": "^0.137.0",
     "tweakpane": "^1.5.8"
   },
   "devDependencies": {
